@@ -1,0 +1,119 @@
+{
+    "luau-lsp.studioPlugin.enabled": true,
+    "editor.formatOnPaste": true,
+    "editor.formatOnSave": true,
+    "editor.formatOnType": true,
+    "editor.insertSpaces": true,
+    "editor.tabSize": 4,
+    "editor.detectIndentation": false,
+    "[lua]": {
+        "editor.defaultFormatter": "JohnnyMorganz.stylua"
+    },
+    "[luau]": {
+        "editor.defaultFormatter": "JohnnyMorganz.stylua"
+    },
+    "editor.fontFamily": "Fira Mono",
+    "editor.fontSize": 13,
+    "editor.tokenColorCustomizations": {
+        "textMateRules": [
+            {
+                "scope": [
+                    "constant.language.boolean.true.luau",
+                    "constant.language.boolean.false.luau",
+                    "constant.language.nil.luau"
+                ],
+                "settings": {
+                    "foreground": "#FFC600"
+                }
+            },
+            {
+                "scope": [
+                    "variable.language.self.luau"
+                ],
+                "settings": {
+                    "foreground": "#F86D7C"
+                }
+            },
+            {
+                "scope": [
+                    "support.constant.luau"
+                ],
+                "settings": {
+                    "foreground": "#84D6F7"
+                }
+            },
+            {
+                "scope": [
+                    "storage.modifier.local.luau",
+                    "keyword.control.luau",
+                    "keyword.other.luau"
+                ],
+                "settings": {
+                    "foreground": "#F86D7C"
+                }
+            },
+            {
+                "scope": [
+                    "support.function.luau"
+                ],
+                "settings": {
+                    "foreground": "#84D6F7"
+                }
+            },
+            {
+                "scope": [
+                    "variable.parameter.function.luau",
+                    "variable.other.readwrite.luau"
+                ],
+                "settings": {
+                    "foreground": "#CCCCCC"
+                }
+            },
+            {
+                "scope": [
+                    "entity.name.function.luau"
+                ],
+                "settings": {
+                    "foreground": "#FDFBAC"
+                }
+            },
+            {
+                "scope": [
+                    "comment.line.double-dash.luau",
+                    "comment.block.luau"
+                ],
+                "settings": {
+                    "foreground": "#666666"
+                }
+            },
+            {
+                "scope": [
+                    "string.quoted.double.luau",
+                    "string.quoted.single.luau"
+                ],
+                "settings": {
+                    "foreground": "#ADF195"
+                }
+            },
+            {
+                "scope": [
+                    "constant.numeric.luau"
+                ],
+                "settings": {
+                    "foreground": "#FFC600"
+                }
+            }
+        ]
+    },
+    "highlight.regexes": {
+        "\\b(Vector3|Vector2|CFrame|Color3|UDim|UDim2|Rect|Region3|Ray|Axes|Faces|BrickColor|NumberRange|NumberSequence|ColorSequence|TweenInfo|DockWidgetPluginGuiInfo|Random|RaycastParams|OverlapParams|PhysicalProperties|PathWaypoint|Instance|Enum)\\b": {
+            "filterLanguageRegex": "luau",
+            "decorations": [
+                {
+                    "color": "#84D6F7"
+                }
+            ]
+        }
+    },
+    "luau-lsp.studioPlugin.maximumRequestBodySize": "20mb"
+}

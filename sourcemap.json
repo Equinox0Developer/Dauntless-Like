@@ -1,0 +1,527 @@
+{
+  "name": "game",
+  "className": "DataModel",
+  "children": [
+    {
+      "name": "ReplicatedStorage",
+      "className": "ReplicatedStorage",
+      "pluginManaged": true,
+      "children": [
+        {
+          "name": "Utils",
+          "className": "Folder",
+          "pluginManaged": true,
+          "children": [
+            {
+              "name": "Abbreviator",
+              "className": "ModuleScript",
+              "pluginManaged": true,
+              "filePaths": [
+                "d:/Roblox Studio/Codes/Visual Studio Code/Dauntless Like/ReplicatedStorage/Utils/Abbreviator.luau"
+              ]
+            },
+            {
+              "name": "TimeFormatter",
+              "className": "ModuleScript",
+              "pluginManaged": true,
+              "filePaths": [
+                "d:/Roblox Studio/Codes/Visual Studio Code/Dauntless Like/ReplicatedStorage/Utils/TimeFormatter.luau"
+              ]
+            },
+            {
+              "name": "TypeChecker",
+              "className": "ModuleScript",
+              "pluginManaged": true,
+              "filePaths": [
+                "d:/Roblox Studio/Codes/Visual Studio Code/Dauntless Like/ReplicatedStorage/Utils/TypeChecker.luau"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Systems",
+          "className": "Folder",
+          "pluginManaged": true,
+          "children": [
+            {
+              "name": "StateManagerClient",
+              "className": "ModuleScript",
+              "pluginManaged": true,
+              "filePaths": [
+                "d:/Roblox Studio/Codes/Visual Studio Code/Dauntless Like/ReplicatedStorage/Systems/StateManagerClient.luau"
+              ]
+            },
+            {
+              "name": "AnimationManager",
+              "className": "ModuleScript",
+              "pluginManaged": true,
+              "filePaths": [
+                "d:/Roblox Studio/Codes/Visual Studio Code/Dauntless Like/ReplicatedStorage/Systems/AnimationManager.luau"
+              ]
+            },
+            {
+              "name": "CombatManagerClient",
+              "className": "ModuleScript",
+              "pluginManaged": true,
+              "filePaths": [
+                "d:/Roblox Studio/Codes/Visual Studio Code/Dauntless Like/ReplicatedStorage/Systems/CombatManagerClient.luau"
+              ]
+            },
+            {
+              "name": "HitboxManager",
+              "className": "ModuleScript",
+              "pluginManaged": true,
+              "filePaths": [
+                "d:/Roblox Studio/Codes/Visual Studio Code/Dauntless Like/ReplicatedStorage/Systems/HitboxManager/init.luau"
+              ],
+              "children": [
+                {
+                  "name": "Solvers",
+                  "className": "ModuleScript",
+                  "pluginManaged": true,
+                  "filePaths": [
+                    "d:/Roblox Studio/Codes/Visual Studio Code/Dauntless Like/ReplicatedStorage/Systems/HitboxManager/Solvers/init.luau"
+                  ],
+                  "children": [
+                    {
+                      "name": "Bone",
+                      "className": "ModuleScript",
+                      "pluginManaged": true,
+                      "filePaths": [
+                        "d:/Roblox Studio/Codes/Visual Studio Code/Dauntless Like/ReplicatedStorage/Systems/HitboxManager/Solvers/Bone.luau"
+                      ]
+                    },
+                    {
+                      "name": "Raycast",
+                      "className": "ModuleScript",
+                      "pluginManaged": true,
+                      "filePaths": [
+                        "d:/Roblox Studio/Codes/Visual Studio Code/Dauntless Like/ReplicatedStorage/Systems/HitboxManager/Solvers/Raycast.luau"
+                      ]
+                    },
+                    {
+                      "name": "Blockcast",
+                      "className": "ModuleScript",
+                      "pluginManaged": true,
+                      "filePaths": [
+                        "d:/Roblox Studio/Codes/Visual Studio Code/Dauntless Like/ReplicatedStorage/Systems/HitboxManager/Solvers/Blockcast.luau"
+                      ]
+                    },
+                    {
+                      "name": "Attachment",
+                      "className": "ModuleScript",
+                      "pluginManaged": true,
+                      "filePaths": [
+                        "d:/Roblox Studio/Codes/Visual Studio Code/Dauntless Like/ReplicatedStorage/Systems/HitboxManager/Solvers/Attachment.luau"
+                      ]
+                    },
+                    {
+                      "name": "Spherecast",
+                      "className": "ModuleScript",
+                      "pluginManaged": true,
+                      "filePaths": [
+                        "d:/Roblox Studio/Codes/Visual Studio Code/Dauntless Like/ReplicatedStorage/Systems/HitboxManager/Solvers/Spherecast.luau"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "Types",
+                  "className": "ModuleScript",
+                  "pluginManaged": true,
+                  "filePaths": [
+                    "d:/Roblox Studio/Codes/Visual Studio Code/Dauntless Like/ReplicatedStorage/Systems/HitboxManager/Types.luau"
+                  ]
+                },
+                {
+                  "name": "Hitbox",
+                  "className": "ModuleScript",
+                  "pluginManaged": true,
+                  "filePaths": [
+                    "d:/Roblox Studio/Codes/Visual Studio Code/Dauntless Like/ReplicatedStorage/Systems/HitboxManager/Hitbox.luau"
+                  ]
+                },
+                {
+                  "name": "Visualizers",
+                  "className": "ModuleScript",
+                  "pluginManaged": true,
+                  "filePaths": [
+                    "d:/Roblox Studio/Codes/Visual Studio Code/Dauntless Like/ReplicatedStorage/Systems/HitboxManager/Visualizers/init.luau"
+                  ],
+                  "children": [
+                    {
+                      "name": "Raycast",
+                      "className": "ModuleScript",
+                      "pluginManaged": true,
+                      "filePaths": [
+                        "d:/Roblox Studio/Codes/Visual Studio Code/Dauntless Like/ReplicatedStorage/Systems/HitboxManager/Visualizers/Raycast.luau"
+                      ]
+                    },
+                    {
+                      "name": "Blockcast",
+                      "className": "ModuleScript",
+                      "pluginManaged": true,
+                      "filePaths": [
+                        "d:/Roblox Studio/Codes/Visual Studio Code/Dauntless Like/ReplicatedStorage/Systems/HitboxManager/Visualizers/Blockcast.luau"
+                      ]
+                    },
+                    {
+                      "name": "Spherecast",
+                      "className": "ModuleScript",
+                      "pluginManaged": true,
+                      "filePaths": [
+                        "d:/Roblox Studio/Codes/Visual Studio Code/Dauntless Like/ReplicatedStorage/Systems/HitboxManager/Visualizers/Spherecast.luau"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "Settings",
+                  "className": "ModuleScript",
+                  "pluginManaged": true,
+                  "filePaths": [
+                    "d:/Roblox Studio/Codes/Visual Studio Code/Dauntless Like/ReplicatedStorage/Systems/HitboxManager/Settings.luau"
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "InputManager",
+              "className": "ModuleScript",
+              "pluginManaged": true,
+              "filePaths": [
+                "d:/Roblox Studio/Codes/Visual Studio Code/Dauntless Like/ReplicatedStorage/Systems/InputManager.luau"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Data",
+          "className": "Folder",
+          "pluginManaged": true,
+          "children": [
+            {
+              "name": "Animations",
+              "className": "ModuleScript",
+              "pluginManaged": true,
+              "filePaths": [
+                "d:/Roblox Studio/Codes/Visual Studio Code/Dauntless Like/ReplicatedStorage/Data/Animations.luau"
+              ]
+            },
+            {
+              "name": "States",
+              "className": "ModuleScript",
+              "pluginManaged": true,
+              "filePaths": [
+                "d:/Roblox Studio/Codes/Visual Studio Code/Dauntless Like/ReplicatedStorage/Data/States.luau"
+              ]
+            },
+            {
+              "name": "Actions",
+              "className": "ModuleScript",
+              "pluginManaged": true,
+              "filePaths": [
+                "d:/Roblox Studio/Codes/Visual Studio Code/Dauntless Like/ReplicatedStorage/Data/Actions.luau"
+              ]
+            },
+            {
+              "name": "Marketplace",
+              "className": "ModuleScript",
+              "pluginManaged": true,
+              "filePaths": [
+                "d:/Roblox Studio/Codes/Visual Studio Code/Dauntless Like/ReplicatedStorage/Data/Marketplace.luau"
+              ]
+            },
+            {
+              "name": "Codes",
+              "className": "ModuleScript",
+              "pluginManaged": true,
+              "filePaths": [
+                "d:/Roblox Studio/Codes/Visual Studio Code/Dauntless Like/ReplicatedStorage/Data/Codes.luau"
+              ]
+            },
+            {
+              "name": "Weapons",
+              "className": "ModuleScript",
+              "pluginManaged": true,
+              "filePaths": [
+                "d:/Roblox Studio/Codes/Visual Studio Code/Dauntless Like/ReplicatedStorage/Data/Weapons.luau"
+              ]
+            },
+            {
+              "name": "Player",
+              "className": "ModuleScript",
+              "pluginManaged": true,
+              "filePaths": [
+                "d:/Roblox Studio/Codes/Visual Studio Code/Dauntless Like/ReplicatedStorage/Data/Player.luau"
+              ]
+            },
+            {
+              "name": "Bots",
+              "className": "ModuleScript",
+              "pluginManaged": true,
+              "filePaths": [
+                "d:/Roblox Studio/Codes/Visual Studio Code/Dauntless Like/ReplicatedStorage/Data/Bots.luau"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Core",
+          "className": "Folder",
+          "pluginManaged": true,
+          "children": [
+            {
+              "name": "Packet",
+              "className": "ModuleScript",
+              "pluginManaged": true,
+              "filePaths": [
+                "d:/Roblox Studio/Codes/Visual Studio Code/Dauntless Like/ReplicatedStorage/Core/Packet/init.luau"
+              ],
+              "children": [
+                {
+                  "name": "Signal",
+                  "className": "ModuleScript",
+                  "pluginManaged": true,
+                  "filePaths": [
+                    "d:/Roblox Studio/Codes/Visual Studio Code/Dauntless Like/ReplicatedStorage/Core/Packet/Signal.luau"
+                  ]
+                },
+                {
+                  "name": "Task",
+                  "className": "ModuleScript",
+                  "pluginManaged": true,
+                  "filePaths": [
+                    "d:/Roblox Studio/Codes/Visual Studio Code/Dauntless Like/ReplicatedStorage/Core/Packet/Task.luau"
+                  ]
+                },
+                {
+                  "name": "Types",
+                  "className": "ModuleScript",
+                  "pluginManaged": true,
+                  "filePaths": [
+                    "d:/Roblox Studio/Codes/Visual Studio Code/Dauntless Like/ReplicatedStorage/Core/Packet/Types/init.luau"
+                  ],
+                  "children": [
+                    {
+                      "name": "Characters",
+                      "className": "ModuleScript",
+                      "pluginManaged": true,
+                      "filePaths": [
+                        "d:/Roblox Studio/Codes/Visual Studio Code/Dauntless Like/ReplicatedStorage/Core/Packet/Types/Characters.luau"
+                      ]
+                    },
+                    {
+                      "name": "Static1",
+                      "className": "ModuleScript",
+                      "pluginManaged": true,
+                      "filePaths": [
+                        "d:/Roblox Studio/Codes/Visual Studio Code/Dauntless Like/ReplicatedStorage/Core/Packet/Types/Static1.luau"
+                      ]
+                    },
+                    {
+                      "name": "Static2",
+                      "className": "ModuleScript",
+                      "pluginManaged": true,
+                      "filePaths": [
+                        "d:/Roblox Studio/Codes/Visual Studio Code/Dauntless Like/ReplicatedStorage/Core/Packet/Types/Static2.luau"
+                      ]
+                    },
+                    {
+                      "name": "Static3",
+                      "className": "ModuleScript",
+                      "pluginManaged": true,
+                      "filePaths": [
+                        "d:/Roblox Studio/Codes/Visual Studio Code/Dauntless Like/ReplicatedStorage/Core/Packet/Types/Static3.luau"
+                      ]
+                    },
+                    {
+                      "name": "Enums",
+                      "className": "ModuleScript",
+                      "pluginManaged": true,
+                      "filePaths": [
+                        "d:/Roblox Studio/Codes/Visual Studio Code/Dauntless Like/ReplicatedStorage/Core/Packet/Types/Enums.luau"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Signal",
+              "className": "ModuleScript",
+              "pluginManaged": true,
+              "filePaths": [
+                "d:/Roblox Studio/Codes/Visual Studio Code/Dauntless Like/ReplicatedStorage/Core/Signal.luau"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "UI",
+          "className": "Folder",
+          "pluginManaged": true,
+          "children": [
+            {
+              "name": "Effects",
+              "className": "Folder",
+              "pluginManaged": true,
+              "children": [
+                {
+                  "name": "CameraShake",
+                  "className": "ModuleScript",
+                  "pluginManaged": true,
+                  "filePaths": [
+                    "d:/Roblox Studio/Codes/Visual Studio Code/Dauntless Like/ReplicatedStorage/UI/Effects/CameraShake.luau"
+                  ]
+                },
+                {
+                  "name": "Spring",
+                  "className": "ModuleScript",
+                  "pluginManaged": true,
+                  "filePaths": [
+                    "d:/Roblox Studio/Codes/Visual Studio Code/Dauntless Like/ReplicatedStorage/UI/Effects/Spring.luau"
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Menus",
+              "className": "Folder",
+              "pluginManaged": true,
+              "children": [
+                {
+                  "name": "Notifications",
+                  "className": "ModuleScript",
+                  "pluginManaged": true,
+                  "filePaths": [
+                    "d:/Roblox Studio/Codes/Visual Studio Code/Dauntless Like/ReplicatedStorage/UI/Menus/Notifications.luau"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ServerScriptService",
+      "className": "ServerScriptService",
+      "pluginManaged": true,
+      "children": [
+        {
+          "name": "Initializer",
+          "className": "Script",
+          "pluginManaged": true,
+          "filePaths": [
+            "d:/Roblox Studio/Codes/Visual Studio Code/Dauntless Like/ServerScriptService/Initializer.legacy.luau"
+          ]
+        },
+        {
+          "name": "Systems",
+          "className": "Folder",
+          "pluginManaged": true,
+          "children": [
+            {
+              "name": "MarketplaceManager",
+              "className": "ModuleScript",
+              "pluginManaged": true,
+              "filePaths": [
+                "d:/Roblox Studio/Codes/Visual Studio Code/Dauntless Like/ServerScriptService/Systems/MarketplaceManager.luau"
+              ]
+            },
+            {
+              "name": "CodesManager",
+              "className": "ModuleScript",
+              "pluginManaged": true,
+              "filePaths": [
+                "d:/Roblox Studio/Codes/Visual Studio Code/Dauntless Like/ServerScriptService/Systems/CodesManager.luau"
+              ]
+            },
+            {
+              "name": "ProfileManager",
+              "className": "ModuleScript",
+              "pluginManaged": true,
+              "filePaths": [
+                "d:/Roblox Studio/Codes/Visual Studio Code/Dauntless Like/ServerScriptService/Systems/ProfileManager/init.luau"
+              ],
+              "children": [
+                {
+                  "name": "Marketplace",
+                  "className": "ModuleScript",
+                  "pluginManaged": true,
+                  "filePaths": [
+                    "d:/Roblox Studio/Codes/Visual Studio Code/Dauntless Like/ServerScriptService/Systems/ProfileManager/Marketplace.luau"
+                  ]
+                },
+                {
+                  "name": "Ranking",
+                  "className": "ModuleScript",
+                  "pluginManaged": true,
+                  "filePaths": [
+                    "d:/Roblox Studio/Codes/Visual Studio Code/Dauntless Like/ServerScriptService/Systems/ProfileManager/Ranking.luau"
+                  ]
+                },
+                {
+                  "name": "Leaderstats",
+                  "className": "ModuleScript",
+                  "pluginManaged": true,
+                  "filePaths": [
+                    "d:/Roblox Studio/Codes/Visual Studio Code/Dauntless Like/ServerScriptService/Systems/ProfileManager/Leaderstats.luau"
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "CombatManagerServer",
+              "className": "ModuleScript",
+              "pluginManaged": true,
+              "filePaths": [
+                "d:/Roblox Studio/Codes/Visual Studio Code/Dauntless Like/ServerScriptService/Systems/CombatManagerServer.luau"
+              ]
+            },
+            {
+              "name": "StatesManagerServer",
+              "className": "ModuleScript",
+              "pluginManaged": true,
+              "filePaths": [
+                "d:/Roblox Studio/Codes/Visual Studio Code/Dauntless Like/ServerScriptService/Systems/StatesManagerServer.luau"
+              ]
+            },
+            {
+              "name": "CharacterManager",
+              "className": "ModuleScript",
+              "pluginManaged": true,
+              "filePaths": [
+                "d:/Roblox Studio/Codes/Visual Studio Code/Dauntless Like/ServerScriptService/Systems/CharacterManager.luau"
+              ]
+            },
+            {
+              "name": "BotsManager",
+              "className": "ModuleScript",
+              "pluginManaged": true,
+              "filePaths": [
+                "d:/Roblox Studio/Codes/Visual Studio Code/Dauntless Like/ServerScriptService/Systems/BotsManager.luau"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Core",
+          "className": "Folder",
+          "pluginManaged": true,
+          "children": [
+            {
+              "name": "ProfileStore",
+              "className": "ModuleScript",
+              "pluginManaged": true,
+              "filePaths": [
+                "d:/Roblox Studio/Codes/Visual Studio Code/Dauntless Like/ServerScriptService/Core/ProfileStore.luau"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
