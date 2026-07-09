@@ -277,8 +277,6 @@ function BotsManager:despawnBot()
 end
 
 function BotsManager:animateState()
-	warn(`BotsManager:animateState called. The actual bot's state is: {self.State}.`)
-
 	local state = self.State
 	local tracks = self.Tracks
 
@@ -466,7 +464,7 @@ end
 
 function BotsManager:think()
 	local state = self.State
-	print(state)
+	
 	if state == "Idle" or state == "Broke" or state == "Stunned" or state == "Waiting" then
 		return
 	elseif state == "Searching" then

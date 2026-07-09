@@ -43,6 +43,18 @@ local function attack(player: Player, actualAttack: number)
 end
 
 local function hit(player: Player, botModel: Model, partName: string, actualAttack: number)
+	--[[
+    ----- Anti Cheat -----
+        Jogador está vivo e atacando
+        Ataque está dentro da janela de dano
+        Arma usada corresponde ao ataque
+        Alvo existe e está vivo
+        Distância entre jogador e alvo é plausível
+        Alvo está aproximadamente na direção do golpe
+        O mesmo ataque ainda não acertou esse alvo
+        Cooldown/anti-spam não foi violado
+    ]]
+
 	local character = player.Character
 
 	if not character then

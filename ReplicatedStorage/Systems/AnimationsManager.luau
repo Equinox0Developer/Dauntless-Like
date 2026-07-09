@@ -44,12 +44,20 @@ function AnimationsManager.stopAllAnimations()
 	end
 end
 
-function AnimationsManager.changeIdle(weaponName: string)
+function AnimationsManager.changeIdleAnimations()
+	local weaponName = player:GetAttribute("Weapon")
+
 	local animate = character:WaitForChild("Animate")
 	animate.idle.Animation1.AnimationId = animationsAssets[weaponName]["Idle_1"].AnimationId
 	animate.idle.Animation2.AnimationId = animationsAssets[weaponName]["Idle_1"].AnimationId
+end
 
-	AnimationsManager.stopAllAnimations()
+function AnimationsManager.changeMovementAnimations()
+	local weaponName = player:GetAttribute("Weapon")
+
+	local animate = character:WaitForChild("Animate")
+	animate.walk.WalkAnim.AnimationId = animationsAssets[weaponName]["Walk_1"].AnimationId
+	animate.run.RunAnim.AnimationId = animationsAssets[weaponName]["Run_1"].AnimationId
 end
 
 function AnimationsManager.characterAdded(model: Model)
@@ -66,7 +74,14 @@ function AnimationsManager.characterAdded(model: Model)
 		end
 	end
 
-	AnimationsManager.changeIdle(player:GetAttribute("Weapon"))
+	for _, track in tracks do
+		track:Play()
+		track:Stop()
+	end
+
+	AnimationsManager.changeIdleAnimations()
+	AnimationsManager.changeMovementAnimations()
+	AnimationsManager.stopAllAnimations()
 
 	character:SetAttribute("Loaded", true)
 end
