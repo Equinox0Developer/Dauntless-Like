@@ -7,13 +7,15 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 
 --// Folders
-local serverSystems = ServerScriptService:WaitForChild("Systems")
-local clientSystems = ReplicatedStorage:WaitForChild("Systems")
+local assets = ReplicatedStorage:WaitForChild("Assets")
+local systems = ServerScriptService:WaitForChild("Systems")
 local data = ReplicatedStorage:WaitForChild("Data")
 
+--// Assets
+local botsAssets = assets:WaitForChild("Bots")
+
 --// Systems
-local replicationManager = require(serverSystems:WaitForChild("ReplicationManagerServer"))
-local poolManager = require(clientSystems:WaitForChild("PoolsManager"))
+local replicationManager = require(systems:WaitForChild("ReplicationManagerServer"))
 
 --// Data
 local botsData = require(data:WaitForChild("Bots"))
@@ -59,6 +61,80 @@ local BODY_PARTS = {
 	LeftFoot = "LeftLeg",
 }
 
+local ANIMATIONS = {
+	Broke = {
+		Fall = 130483794867730,
+		Idle = 71884332622779,
+		Wake = 108963992339191,
+	},
+	Stun = {
+		Fall = 130483794867730,
+		Idle = 71884332622779,
+		Wake = 108963992339191,
+	},
+}
+
+--// Types
+export type bot = {
+	Name: string,
+	State: "Idle" | "Searching" | "Chasing" | "Attacking" | "Returning" | "Broke" | "Stunned" | "Waiting",
+	Active: boolean,
+	AttackCooldown: number,
+	Model: Model,
+	Tracks: {},
+	Connections: {},
+	Humanoid: Humanoid,
+	RootPart: BasePart,
+	Target: Model,
+	SpawnPart: BasePart,
+	SpawnPosition: Vector3,
+	ChaseRadius: number,
+	ActualHealth: number,
+	TotalHealth: number,
+	Toughness: number,
+	Speed: number,
+	DamageToStun: number,
+	StunDamage: number,
+	BodyParts: {
+		Head: {
+			TotalHealth: number,
+			ActualHealth: number,
+			StunMultiplier: number,
+		},
+		Torso: {
+			TotalHealth: number,
+			ActualHealth: number,
+			StunMultiplier: number,
+		},
+		RightArm: {
+			TotalHealth: number,
+			ActualHealth: number,
+			StunMultiplier: number,
+		},
+		LeftArm: {
+			TotalHealth: number,
+			ActualHealth: number,
+			StunMultiplier: number,
+		},
+		RightLeg: {
+			TotalHealth: number,
+			ActualHealth: number,
+			StunMultiplier: number,
+		},
+		LeftLeg: {
+			TotalHealth: number,
+			ActualHealth: number,
+			StunMultiplier: number,
+		},
+	},
+	BrokenParts: {},
+	Attacks: {
+		Light: {},
+		Medium: {},
+		Heavy: {},
+	},
+}
+
 --// Functions
 function BotsManager.getBot(botModel: Model)
 	return bots[botModel]
@@ -67,25 +143,24 @@ end
 function BotsManager.createBot(botName: string)
 	local botData = table.clone(botsData[botName])
 
-	local botPool = poolManager.getPool(botName)
-
-	if not botData or not botPool then
+	if not botData then
 		return
 	end
 
-	local bot = {
+	local bot: bot = {
 		Name = botName,
 		State = "Idle",
 		Active = false,
 		AttackCooldown = 0,
 		Model = nil,
+		Tracks = {},
+		Connections = {},
 		Humanoid = nil,
 		RootPart = nil,
 		Target = nil,
 		SpawnPart = nil,
 		SpawnPosition = nil,
 		ChaseRadius = nil,
-		Pool = botPool,
 		ActualHealth = botData.Health,
 		TotalHealth = botData.Health,
 		Toughness = botData.Toughness,
@@ -134,14 +209,21 @@ function BotsManager.createBot(botName: string)
 end
 
 function BotsManager:spawnBot(spawnPart: BasePart)
-	local botModel = self.Pool:getUnit()
-	botModel.Humanoid.WalkSpeed = self.Speed
+	local botModel = botsAssets:WaitForChild(self.Name):Clone()
+	local humanoid = botModel:WaitForChild("Humanoid")
+	local animator = humanoid:WaitForChild("Animator") or Instance.new("Animator", humanoid)
+
+	humanoid.WalkSpeed = self.Speed
 
 	local _, botSize = botModel:GetBoundingBox()
 	local groundHeight = spawnPart.Position.Y + spawnPart.Size.Y / 2
 	local Position = Vector3.new(spawnPart.Position.X, groundHeight + botSize.Y / 2, spawnPart.Position.Z)
 	botModel:PivotTo(CFrame.new(Position))
 	botModel.Parent = botsFolder
+
+	for _, animationInstance in script:GetChildren() do
+		self.Tracks[animationInstance.Name] = animator:LoadAnimation(animationInstance)
+	end
 
 	self.Model = botModel
 	self.Humanoid = botModel:WaitForChild("Humanoid")
@@ -169,11 +251,44 @@ function BotsManager:despawnBot()
 		values.ActualHealth = values.TotalHealth
 	end
 
+	for _, connection in self.Connections do
+		connection:Disconnect()
+	end
+
+	table.clear(self.Tracks)
+	table.clear(self.Connections)
 	table.clear(self.BrokenParts)
 
-	self.Pool:releaseUnit(botModel)
+	botModel:Destroy()
+end
 
-	print(self.Name .. " released")
+function BotsManager:animateState()
+	local state = self.State
+	local tracks = self.Tracks
+
+	local fallAnimation = tracks[`{state}Fall`]
+	local idleAnimation = tracks[`{state}Idle`]
+	local wakeAnimation = tracks[`{state}Wake`]
+
+	self.connections["Fall"] = fallAnimation:GetMarkerReachedSignal("Next"):Connect(function()
+		idleAnimation:Play(0.2)
+		fallAnimation:Stop(0.2)
+
+		repeat
+			task.wait(0.05)
+		until self.state ~= state
+
+		wakeAnimation:Play(0.2)
+		idleAnimation:Stop(0.2)
+	end)
+
+	self.connections["Wake"] = wakeAnimation:GetMarkerReachedSignal("Next"):Connect(function()
+		wakeAnimation:Stop(0.2)
+
+		self.State = "Searching"
+	end)
+
+	fallAnimation:Play()
 end
 
 function BotsManager:takeDamage(player: Player, damage: number, partName: string)
@@ -215,34 +330,24 @@ end
 function BotsManager:breakPart(bodyPartName: string)
 	self.BodyParts[bodyPartName].health = 0
 
-	local botModel = self.Model
-
 	self.State = "Broke"
+	self:animateState()
 
 	task.delay(2.5, function()
-		self.State = "Searching"
-
-		print(botModel.Name .. " lift up from broke")
+		self.State = "Waiting"
 	end)
-
-	print(botModel.Name .. " broke")
 
 	table.insert(self.BrokenParts, bodyPartName)
 end
 
 function BotsManager:stunBot(duration: number)
-	local botModel = self.Model
-
 	self.State = "Stunned"
+	self:animateState()
 
 	task.delay(duration, function()
 		self.StunDamage = 0
-		self.State = "Searching"
-
-		print(botModel.Name .. " woke up from stunned")
+		self.State = "Waiting"
 	end)
-
-	print(botModel.Name .. " stunned")
 end
 
 function BotsManager:isTargetInRange()
@@ -343,7 +448,7 @@ end
 function BotsManager:think()
 	local state = self.State
 
-	if state == "Idle" or state == "Broke" or state == "Stunned" then
+	if state == "Idle" or state == "Broke" or state == "Stunned" or state == "Waiting" then
 		return
 	elseif state == "Searching" then
 		self:updateSearch()
@@ -371,6 +476,13 @@ function BotsManager.initialize()
 		local botName = spawnPart:GetAttribute("Bot")
 		local bot = BotsManager.createBot(botName)
 		bot:spawnBot(spawnPart)
+	end
+
+	for animationName, animationId in ANIMATIONS do
+		local animationInstance = Instance.new("Animation")
+		animationInstance.Name = animationName
+		animationInstance.AnimationId = animationId
+		animationInstance.Parent = script
 	end
 end
 
