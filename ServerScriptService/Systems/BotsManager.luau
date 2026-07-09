@@ -34,6 +34,9 @@ local bots = {}
 --// Constants
 local THINK_RATE = 1 / 10
 
+local BROKE_DURATION = 5
+local STUNNED_DURATION = 10
+
 local CLOSE_DISTANCE = 10
 
 local ATTACK_CHANCES = {
@@ -47,18 +50,23 @@ local BODY_PARTS = {
 	HumanoidRootPart = "Torso",
 	UpperTorso = "Torso",
 	LowerTorso = "Torso",
+	Torso = "Torso",
 	RightUpperArm = "RightArm",
 	RightLowerArm = "RightArm",
 	RightHand = "RightArm",
+	RightArm = "RightArm",
 	LeftUpperArm = "LeftArm",
 	LeftLowerArm = "LeftArm",
 	LeftHand = "LeftArm",
+	LeftArm = "LeftArm",
 	RightUpperLeg = "RightLeg",
 	RightLowerLeg = "RightLeg",
 	RightFoot = "RightLeg",
+	RightLeg = "RightLeg",
 	LeftUpperLeg = "LeftLeg",
 	LeftLowerLeg = "LeftLeg",
 	LeftFoot = "LeftLeg",
+	LeftLeg = "LeftLeg",
 }
 
 local ANIMATIONS = {
@@ -67,7 +75,7 @@ local ANIMATIONS = {
 		Idle = 71884332622779,
 		Wake = 108963992339191,
 	},
-	Stun = {
+	Stunned = {
 		Fall = 130483794867730,
 		Idle = 71884332622779,
 		Wake = 108963992339191,
@@ -93,7 +101,7 @@ export type bot = {
 	TotalHealth: number,
 	Toughness: number,
 	Speed: number,
-	DamageToStun: number,
+	DamageToStun: number, -- Colocar fórmula aqui!
 	StunDamage: number,
 	BodyParts: {
 		Head: {
@@ -165,7 +173,7 @@ function BotsManager.createBot(botName: string)
 		TotalHealth = botData.Health,
 		Toughness = botData.Toughness,
 		Speed = botData.Speed,
-		DamageToStun = (botData.Health * 0.1) * (botData.Stability / 100),
+		DamageToStun = (botData.Health * 0.05) * (botData.Stability / 100),
 		StunDamage = 0,
 		BodyParts = {
 			Head = {
@@ -219,10 +227,14 @@ function BotsManager:spawnBot(spawnPart: BasePart)
 	local groundHeight = spawnPart.Position.Y + spawnPart.Size.Y / 2
 	local Position = Vector3.new(spawnPart.Position.X, groundHeight + botSize.Y / 2, spawnPart.Position.Z)
 	botModel:PivotTo(CFrame.new(Position))
-	botModel.Parent = botsFolder
 
 	for _, animationInstance in script:GetChildren() do
 		self.Tracks[animationInstance.Name] = animator:LoadAnimation(animationInstance)
+	end
+
+	for _, track in self.Tracks do
+		track:Play()
+		track:Stop()
 	end
 
 	self.Model = botModel
@@ -233,6 +245,8 @@ function BotsManager:spawnBot(spawnPart: BasePart)
 	self.ChaseRadius = spawnPart:GetAttribute("Radius")
 
 	bots[botModel] = self
+
+	botModel.Parent = botsFolder
 
 	self:activate()
 end
@@ -263,32 +277,36 @@ function BotsManager:despawnBot()
 end
 
 function BotsManager:animateState()
+	warn(`BotsManager:animateState called. The actual bot's state is: {self.State}.`)
+
 	local state = self.State
 	local tracks = self.Tracks
 
-	local fallAnimation = tracks[`{state}Fall`]
-	local idleAnimation = tracks[`{state}Idle`]
-	local wakeAnimation = tracks[`{state}Wake`]
+	local fallTrack = tracks[`{state}_Fall`]
+	local idleTrack = tracks[`{state}_Idle`]
+	local wakeTrack = tracks[`{state}_Wake`]
 
-	self.connections["Fall"] = fallAnimation:GetMarkerReachedSignal("Next"):Connect(function()
-		idleAnimation:Play(0.2)
-		fallAnimation:Stop(0.2)
+	self.Connections["Fall"] = fallTrack:GetMarkerReachedSignal("Next"):Connect(function()
+		idleTrack:Play(0.2)
+		fallTrack:Stop(0.2)
 
 		repeat
 			task.wait(0.05)
-		until self.state ~= state
+		until self.State == "Waiting"
 
-		wakeAnimation:Play(0.2)
-		idleAnimation:Stop(0.2)
+		wakeTrack:Play(0.2)
+		idleTrack:Stop(0.2)
 	end)
 
-	self.connections["Wake"] = wakeAnimation:GetMarkerReachedSignal("Next"):Connect(function()
-		wakeAnimation:Stop(0.2)
+	self.Connections["Wake"] = wakeTrack:GetMarkerReachedSignal("Next"):Connect(function()
+		wakeTrack:Stop()
+
+		task.wait(0.15)
 
 		self.State = "Searching"
 	end)
 
-	fallAnimation:Play()
+	fallTrack:Play()
 end
 
 function BotsManager:takeDamage(player: Player, damage: number, partName: string)
@@ -304,7 +322,8 @@ function BotsManager:takeDamage(player: Player, damage: number, partName: string
 	if bodyPartValues.ActualHealth and bodyPartValues.ActualHealth > 0 then
 		bodyPartValues.ActualHealth -= damage
 
-		print(`{bodyPartName}'s health: {bodyPartValues.ActualHealth}`)
+		-- print(`{bodyPartName}'s health: {bodyPartValues.ActualHealth}`)
+
 		replicationManager.replicate(player, 50, "Weapons", { botModel = self.Model, partName = partName, bodyPart = bodyPartName })
 
 		if bodyPartValues.ActualHealth <= 0 then
@@ -316,10 +335,10 @@ function BotsManager:takeDamage(player: Player, damage: number, partName: string
 		self.StunDamage += damage * (bodyPartValues.StunMultiplier / 100)
 	end
 
-	print(`{self.Name}'s health: {self.ActualHealth}`)
+	-- print(`{self.Name}'s health: {self.ActualHealth}`)
 
-	if self.State ~= "Stunned" and self.StunDamage >= self.DamageToStun then
-		self:stunBot(5)
+	if self.State ~= "Stunned" and self.State ~= "Waiting" and self.StunDamage >= self.DamageToStun then
+		self:stunBot()
 	end
 
 	if self.ActualHealth <= 0 then
@@ -333,18 +352,18 @@ function BotsManager:breakPart(bodyPartName: string)
 	self.State = "Broke"
 	self:animateState()
 
-	task.delay(2.5, function()
+	task.delay(BROKE_DURATION, function()
 		self.State = "Waiting"
 	end)
 
 	table.insert(self.BrokenParts, bodyPartName)
 end
 
-function BotsManager:stunBot(duration: number)
+function BotsManager:stunBot()
 	self.State = "Stunned"
 	self:animateState()
 
-	task.delay(duration, function()
+	task.delay(STUNNED_DURATION, function()
 		self.StunDamage = 0
 		self.State = "Waiting"
 	end)
@@ -447,7 +466,7 @@ end
 
 function BotsManager:think()
 	local state = self.State
-
+	print(state)
 	if state == "Idle" or state == "Broke" or state == "Stunned" or state == "Waiting" then
 		return
 	elseif state == "Searching" then
@@ -472,17 +491,19 @@ function BotsManager:activate()
 end
 
 function BotsManager.initialize()
+	for animationType, animationsTable in ANIMATIONS do
+		for animationName, animationId in animationsTable do
+			local animationInstance = Instance.new("Animation")
+			animationInstance.Name = `{animationType}_{animationName}`
+			animationInstance.AnimationId = `rbxassetid://{animationId}`
+			animationInstance.Parent = script
+		end
+	end
+
 	for _, spawnPart in spawnsFolder:GetChildren() do
 		local botName = spawnPart:GetAttribute("Bot")
 		local bot = BotsManager.createBot(botName)
 		bot:spawnBot(spawnPart)
-	end
-
-	for animationName, animationId in ANIMATIONS do
-		local animationInstance = Instance.new("Animation")
-		animationInstance.Name = animationName
-		animationInstance.AnimationId = animationId
-		animationInstance.Parent = script
 	end
 end
 
