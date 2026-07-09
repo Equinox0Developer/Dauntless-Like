@@ -18,7 +18,9 @@ local modules = {
 	systems:WaitForChild("StatesManagerClient"),
 	systems:WaitForChild("CombatManagerClient"),
 	systems:WaitForChild("InputManager"),
-	menus:WaitForChild("Notifications"),
+	menus:WaitForChild("NotificationsMenu"),
+	menus:WaitForChild("MainMenu"),
+	menus:WaitForChild("BattleMenu"),
 }
 
 --// Functions

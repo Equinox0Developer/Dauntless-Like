@@ -21,7 +21,7 @@ local profilesManager = require(systems:WaitForChild("ProfilesManager"))
 local codesData = require(data:WaitForChild("Codes"))
 
 --// Menus
-local notificationsMenu = require(menus:WaitForChild("Notifications"))
+local notificationsMenu = require(menus:WaitForChild("NotificationsMenu"))
 
 --// Events
 --local redeemCodeEvent = packet("RedeemCode", packet.String)

@@ -3,22 +3,31 @@ local BotsManager = {}
 BotsManager.__index = BotsManager
 
 --// Services
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 
 --// Folders
 local assets = ReplicatedStorage:WaitForChild("Assets")
+local core = ReplicatedStorage:WaitForChild("Core")
 local systems = ServerScriptService:WaitForChild("Systems")
 local data = ReplicatedStorage:WaitForChild("Data")
 
 --// Assets
 local botsAssets = assets:WaitForChild("Bots")
 
+--// Core
+local packet = require(core:WaitForChild("Packet"))
+
 --// Systems
 local replicationManager = require(systems:WaitForChild("ReplicationManagerServer"))
 
 --// Data
 local botsData = require(data:WaitForChild("Bots"))
+
+--// Events
+local enteredBattleEvent = packet("EnteredBattle", packet.Any)
+local leftBattleEvent = packet("LeftBattle", packet.Any)
 
 --// Variables
 local charactersFolder = workspace:WaitForChild("Players")
@@ -135,12 +144,13 @@ export type bot = {
 			StunMultiplier: number,
 		},
 	},
-	BrokenParts: {},
+	BrokenParts: { string },
 	Attacks: {
-		Light: {},
-		Medium: {},
-		Heavy: {},
+		Light: { {} },
+		Medium: { {} },
+		Heavy: { {} },
 	},
+	CharactersInBattle: { Model },
 }
 
 --// Functions
@@ -209,6 +219,7 @@ function BotsManager.createBot(botName: string)
 		},
 		BrokenParts = {},
 		Attacks = botData.Attacks,
+		CharactersInBattle = {},
 	}
 
 	setmetatable(bot, BotsManager)
@@ -354,7 +365,7 @@ function BotsManager:breakPart(bodyPartName: string)
 		self.State = "Waiting"
 	end)
 
-	table.insert(self.BrokenParts, bodyPartName)
+	self.BrokenParts[bodyPartName] = true
 end
 
 function BotsManager:stunBot()
@@ -375,19 +386,40 @@ function BotsManager:isTargetClose()
 	return (self.Target.PrimaryPart.Position - self.RootPart.Position).Magnitude < CLOSE_DISTANCE + 1
 end
 
-function BotsManager:updateSearch()
+function BotsManager:checkPlayersInBattle()
 	local distanceLimit = self.ChaseRadius
+	local charactersInBattle = self.CharactersInBattle
 	local closeCharacters = {}
 
 	for _, character in charactersFolder:GetChildren() do
 		local distance = (character.PrimaryPart.Position - self.SpawnPosition).Magnitude
 		if distance < distanceLimit then
-			table.insert(closeCharacters, character)
+			closeCharacters[character] = true
 		end
 	end
 
-	if #closeCharacters > 0 then
-		local chooseCharacter = closeCharacters[math.random(1, #closeCharacters)]
+	for _, character in closeCharacters do
+		if not charactersInBattle[character] then
+			local player = Players:GetPlayerFromCharacter(character)
+			enteredBattleEvent:FireClient(player, self)
+		end
+	end
+
+	for _, character in charactersInBattle do
+		if not closeCharacters[character] then
+			local player = Players:GetPlayerFromCharacter(character)
+			leftBattleEvent:FireClient(player, self)
+		end
+	end
+
+	self.CharactersInBattle = closeCharacters
+end
+
+function BotsManager:updateSearch()
+	local charactersInBattle = self.CharactersInBattle
+
+	if #charactersInBattle > 0 then
+		local chooseCharacter = charactersInBattle[math.random(1, #charactersInBattle)]
 		self.Target = chooseCharacter
 		self.State = "Chasing"
 	else
@@ -463,6 +495,8 @@ function BotsManager:updateReturn()
 end
 
 function BotsManager:think()
+	self:checkPlayersInBattle()
+
 	local state = self.State
 
 	if state == "Idle" or state == "Broke" or state == "Stunned" or state == "Waiting" then
