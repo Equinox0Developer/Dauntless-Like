@@ -13,26 +13,22 @@ local poolsManager = require(systems:WaitForChild("PoolsManager"))
 --// Variables
 local highlightsPool = poolsManager.getPool("Highlights")
 
-type effectData = {
+export type effectData = {
 	botModel: Model,
-	partName: string,
-	bodyPart: string,
+	bodyPartName: string,
 }
 
 --// Functions
 function Sword.replicate(localPlayer: Player, casterCharacter: Model, effectData: effectData)
-	local redHighlight = highlightsPool:getUnit()
-	redHighlight.FillColor = Color3.fromRGB(255, 0, 0)
-	redHighlight.DepthMode = Enum.HighlightDepthMode.Occluded
-	redHighlight.Parent = effectData.botModel[effectData.bodyPart]
+	local bodyPart = effectData.botModel[effectData.bodyPartName]
 
-	--[[ local greenHighlight = highlightsPool:getUnit()
-	greenHighlight.FillColor = Color3.fromRGB(0, 255, 0)
-	greenHighlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-	greenHighlight.Parent = effectData.botModel[effectData.partName] ]]
+	local highlight = highlightsPool:getUnit()
+	highlight.Adornee = bodyPart
+	highlight.FillColor = Color3.fromRGB(255, 0, 0)
+	highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+	highlight.Parent = bodyPart
 
-	highlightsPool:releaseUnit(redHighlight, 0.5)
-	--highlightsPool:releaseUnit(greenHighlight, 0.5)
+	highlightsPool:releaseUnit(highlight, 0.25)
 end
 
 --// Return

@@ -50,7 +50,7 @@ local cooldowns = {}
 local hittedParts = {}
 
 --// Functions
-local function handleAttack()
+local function attack()
 	tracks[actualAttack]:Stop()
 
 	if (os.clock() - attackTime) > 1.5 then
@@ -68,7 +68,7 @@ local function handleAttack()
 	end)
 end
 
-local function handleHitbox(weaponModel: Model)
+local function setupHitbox(weaponModel: Model)
 	if hitbox then
 		hitbox:Destroy()
 		hitbox = nil
@@ -97,7 +97,7 @@ local function handleHitbox(weaponModel: Model)
 	end)
 end
 
-local function handleTracks(weaponName: string)
+local function setupTracks(weaponName: string)
 	for _, track in tracks do
 		track:Stop()
 	end
@@ -162,7 +162,7 @@ local function handleTracks(weaponName: string)
 	end
 end
 
-local function handleCombo(weaponName: string)
+local function setupCombo(weaponName: string)
 	attacksCombo = #animationsData.Weapons[weaponName].Attack
 	actualAttack = attacksCombo
 
@@ -188,9 +188,9 @@ local function weaponChanged()
 	local weaponName = player:GetAttribute("Weapon")
 	local weaponModel = player.Character:FindFirstChild(weaponName)
 
-	handleCombo(weaponName)
-	handleHitbox(weaponModel)
-	handleTracks(weaponName)
+	setupCombo(weaponName)
+	setupHitbox(weaponModel)
+	setupTracks(weaponName)
 
 	ready = true
 end
@@ -208,7 +208,7 @@ function CombatManagerClient.attack()
 
 		table.clear(hittedParts)
 
-		handleAttack()
+		attack()
 		attackTime = os.clock()
 
 		attackEvent:Fire(actualAttack)

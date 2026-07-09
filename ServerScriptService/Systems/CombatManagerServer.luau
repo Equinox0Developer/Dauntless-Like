@@ -32,6 +32,12 @@ local function attack(player: Player, actualAttack: number)
 		return
 	end
 
+	local humanoid = character:WaitForChild("Humanoid")
+
+	if not humanoid or humanoid.Health <= 0 then
+		return
+	end
+
 	local weaponData = weaponsData[player:GetAttribute("Weapon")]
 	local attackCooldown = weaponData.Cooldown[actualAttack]
 	local stateName = `Attack{actualAttack}`
@@ -43,21 +49,15 @@ local function attack(player: Player, actualAttack: number)
 end
 
 local function hit(player: Player, botModel: Model, partName: string, actualAttack: number)
-	--[[
-    ----- Anti Cheat -----
-        Jogador está vivo e atacando
-        Ataque está dentro da janela de dano
-        Arma usada corresponde ao ataque
-        Alvo existe e está vivo
-        Distância entre jogador e alvo é plausível
-        Alvo está aproximadamente na direção do golpe
-        O mesmo ataque ainda não acertou esse alvo
-        Cooldown/anti-spam não foi violado
-    ]]
-
 	local character = player.Character
 
 	if not character then
+		return
+	end
+
+	local humanoid = character:WaitForChild("Humanoid")
+
+	if not humanoid or humanoid.Health <= 0 then
 		return
 	end
 
@@ -68,11 +68,19 @@ local function hit(player: Player, botModel: Model, partName: string, actualAtta
 
 		local bot = botsManager.getBot(botModel)
 
-		if not bot then
+		local weaponData = weaponsData[player:GetAttribute("Weapon")]
+
+		if not bot or not weaponData then
 			return
 		end
 
-		local damage = weaponsData[player:GetAttribute("Weapon")].Damage[actualAttack]
+		local inRange = (character.PrimaryPart.Position - botModel.PrimaryPart.Position).Magnitude < weaponData.Range
+
+		if not inRange then
+			return
+		end
+
+		local damage = weaponData.Damage[actualAttack]
 
 		bot:takeDamage(player, damage, partName)
 	end

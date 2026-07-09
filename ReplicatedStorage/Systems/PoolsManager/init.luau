@@ -117,6 +117,7 @@ function PoolsManager:releaseUnit(unit: Instance, timer: number?)
 
 		unit.Parent = self.folder
 		self.resetFunction(unit)
+		task.wait(0.25)
 		table.insert(self.inStock, unit)
 	end)
 end

@@ -101,7 +101,7 @@ export type bot = {
 	TotalHealth: number,
 	Toughness: number,
 	Speed: number,
-	DamageToStun: number, -- Colocar fórmula aqui!
+	DamageToStun: number,
 	StunDamage: number,
 	BodyParts: {
 		Head: {
@@ -322,8 +322,6 @@ function BotsManager:takeDamage(player: Player, damage: number, partName: string
 
 		-- print(`{bodyPartName}'s health: {bodyPartValues.ActualHealth}`)
 
-		replicationManager.replicate(player, 50, "Weapons", { botModel = self.Model, partName = partName, bodyPart = bodyPartName })
-
 		if bodyPartValues.ActualHealth <= 0 then
 			self:breakPart(bodyPartName)
 		end
@@ -332,6 +330,8 @@ function BotsManager:takeDamage(player: Player, damage: number, partName: string
 	if bodyPartValues.StunMultiplier then
 		self.StunDamage += damage * (bodyPartValues.StunMultiplier / 100)
 	end
+
+	replicationManager.replicate(player, 50, "Weapons", { botModel = self.Model, bodyPartName = bodyPartName })
 
 	-- print(`{self.Name}'s health: {self.ActualHealth}`)
 
@@ -464,7 +464,7 @@ end
 
 function BotsManager:think()
 	local state = self.State
-	
+
 	if state == "Idle" or state == "Broke" or state == "Stunned" or state == "Waiting" then
 		return
 	elseif state == "Searching" then

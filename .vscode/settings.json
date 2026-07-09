@@ -36,6 +36,18 @@
             },
             {
                 "scope": [
+                    "keyword.operator.assignment.luau",
+                    "keyword.operator.comparison.luau",
+                    "keyword.operator.arithmetic.luau",
+                    "keyword.operator.logical.luau",
+                    "keyword.operator.type.luau"
+                ],
+                "settings": {
+                    "foreground": "#CCCCCC"
+                }
+            },
+            {
+                "scope": [
                     "support.constant.luau"
                 ],
                 "settings": {
