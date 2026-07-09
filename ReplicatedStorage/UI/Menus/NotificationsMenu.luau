@@ -530,7 +530,7 @@ function NotificationsMenu.PopLocal(message: string, notifType: NotifType, time:
 		if grad then
 			grad.Parent = label
 		else
-			local gradientChild = script:FindFirstChild(gradientName)
+			local gradientChild = game.ReplicatedStorage.Assets.Gradients:FindFirstChild(gradientName)
 			if gradientChild and gradientChild:IsA("UIGradient") then
 				gradientChild:Clone().Parent = label
 			elseif DEFAULT_USE_GRADIENT then
@@ -731,7 +731,7 @@ end
 function NotificationsMenu.initialize()
 	if not RunService:IsClient() then return end
 
-	local screenGui = script:FindFirstChild("Notifications")
+	local screenGui = game.ReplicatedStorage.Assets.Menus:FindFirstChild("Notifications")
 	if screenGui and not player.PlayerGui:FindFirstChild("Notifications") then
 		screenGui.Parent = player.PlayerGui
 	end

@@ -398,14 +398,14 @@ function BotsManager:checkPlayersInBattle()
 		end
 	end
 
-	for _, character in closeCharacters do
+	for character, _ in closeCharacters do
 		if not charactersInBattle[character] then
 			local player = Players:GetPlayerFromCharacter(character)
 			enteredBattleEvent:FireClient(player, self)
 		end
 	end
 
-	for _, character in charactersInBattle do
+	for character, _ in charactersInBattle do
 		if not closeCharacters[character] then
 			local player = Players:GetPlayerFromCharacter(character)
 			leftBattleEvent:FireClient(player, self)
