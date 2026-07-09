@@ -3,6 +3,17 @@ local PlayersManager = {}
 PlayersManager.__index = PlayersManager
 
 --// Services
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local CollectionService = game:GetService("CollectionService")
+
+--// Folders
+local assets = ReplicatedStorage:WaitForChild("Assets")
+
+--// Assets
+local weaponsAssets = assets:WaitForChild("Weapons")
+
+--// Variables
+local charactersFolder = workspace:WaitForChild("Players")
 
 --// Tables
 local playersTables = {}
@@ -91,11 +102,36 @@ function PlayersManager:updateAttributes()
 	player:SetAttribute("ActualStamina", self.ActualStamina)
 end
 
+function PlayersManager.setupModels(player: Player, character: Model)
+	character.Parent = charactersFolder
+
+	for _, child in character:GetChildren() do
+		if child:IsA("BasePart") then
+			CollectionService:AddTag(child, "Player")
+		end
+	end
+
+	local weaponName
+
+	repeat
+		weaponName = player:GetAttribute("Weapon")
+		task.wait(0.05)
+	until weaponName
+
+	local weaponModel = weaponsAssets:FindFirstChild(weaponName):Clone()
+	weaponModel.Handle.Main.Part0 = character:WaitForChild("RightHand")
+	weaponModel:PivotTo(character:WaitForChild("RightHand").CFrame)
+	weaponModel.Parent = character
+end
+
 function PlayersManager.characterAdded(playerTable: playerTable, model: Model)
 	playerTable.ActualHealth = playerTable.TotalHealth
 	playerTable.ActualStamina = playerTable.TotalStamina
 	playerTable.Character = model
+
 	playerTable:updateAttributes()
+	PlayersManager.setupModels(playerTable.Player, model)
+
 	playerTable:activate()
 end
 

@@ -16,11 +16,11 @@ local leftBattleEvent = packet("LeftBattle", packet.Any)
 
 --// Functions
 local function enteredBattle(bot)
-	print(bot.ActualHealth)
+	print("entered battle")
 end
 
 local function leftBattle(bot)
-	print(bot.ActualHealth)
+	print("left battle.")
 end
 
 function BattleMenu.initialize()

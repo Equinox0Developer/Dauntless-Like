@@ -16,7 +16,6 @@ local modules = {
 	serverSystems:WaitForChild("PlayersManager"),
 	clientSystems:WaitForChild("PoolsManager"),
 	serverSystems:WaitForChild("ReplicationManagerServer"),
-	serverSystems:WaitForChild("CharactersManager"),
 	serverSystems:WaitForChild("CodesManager"),
 	serverSystems:WaitForChild("MarketplaceManager"),
 	serverSystems:WaitForChild("StatesManagerServer"),

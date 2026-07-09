@@ -28,9 +28,11 @@ local background = menu.Background
 
 local healthBackground = background.Health
 local healthFill = healthBackground.Fill
+local healthNumber = healthBackground.Number
 
 local staminaBackground = background.Stamina
 local staminaFill = staminaBackground.Fill
+local staminaNumber = staminaBackground.Number
 
 local lastHealth = player:GetAttribute("TotalHealth")
 local lastStamina = player:GetAttribute("TotalStamina")
@@ -46,8 +48,8 @@ function updateHealthBar()
 
 	local difference = (actualHealth - lastHealth)
 	local frequency = difference > 0 and 3 or 6
-
-	print(actualHealth)
+	
+	healthNumber.Text = `{actualHealth}/{totalHealth}`
 
 	spring.target(healthFill, DAMPING_RATIO, frequency, { Size = UDim2.fromScale(scaledSize, 1) })
 end
@@ -60,8 +62,8 @@ function updateStaminaBar()
 	local difference = (actualStamina - lastStamina)
 	local frequency = difference > 0 and 3 or 6
 
-	print(actualStamina)
-
+	staminaNumber.Text = `{actualStamina}/{totalStamina}`
+	
 	spring.target(staminaFill, DAMPING_RATIO, frequency, { Size = UDim2.fromScale(scaledSize, 1) })
 
 	lastStamina = actualStamina
