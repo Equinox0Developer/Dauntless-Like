@@ -32,8 +32,8 @@ local healthFill = healthBackground.Fill
 local staminaBackground = background.Stamina
 local staminaFill = staminaBackground.Fill
 
-local lastHealth = player:GetAttribute("MaxHealth")
-local lastStamina = player:GetAttribute("MaxStamina")
+local lastHealth = player:GetAttribute("TotalHealth")
+local lastStamina = player:GetAttribute("TotalStamina")
 
 --// Constants
 local DAMPING_RATIO = 1
@@ -41,24 +41,28 @@ local DAMPING_RATIO = 1
 --// Functions
 function updateHealthBar()
 	local actualHealth = player:GetAttribute("ActualHealth")
-	local totalHealth = player:GetAttribute("MaxHealth")
+	local totalHealth = player:GetAttribute("TotalHealth")
 	local scaledSize = actualHealth / totalHealth
 
 	local difference = (actualHealth - lastHealth)
 	local frequency = difference > 0 and 3 or 6
 
-	spring.target(healthFill, DAMPING_RATIO, frequency, { size = scaledSize })
+	print(actualHealth)
+
+	spring.target(healthFill, DAMPING_RATIO, frequency, { Size = UDim2.fromScale(scaledSize, 1) })
 end
 
 function updateStaminaBar()
 	local actualStamina = player:GetAttribute("ActualStamina")
-	local totalStamina = player:GetAttribute("MaxStamina")
+	local totalStamina = player:GetAttribute("TotalStamina")
 	local scaledSize = actualStamina / totalStamina
 
 	local difference = (actualStamina - lastStamina)
 	local frequency = difference > 0 and 3 or 6
 
-	spring.target(staminaFill, DAMPING_RATIO, frequency, { size = scaledSize })
+	print(actualStamina)
+
+	spring.target(staminaFill, DAMPING_RATIO, frequency, { Size = UDim2.fromScale(scaledSize, 1) })
 
 	lastStamina = actualStamina
 end

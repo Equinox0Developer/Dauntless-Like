@@ -19,7 +19,7 @@ local modules = {
 	systems:WaitForChild("CombatManagerClient"),
 	systems:WaitForChild("InputManager"),
 	menus:WaitForChild("NotificationsMenu"),
-	menus:WaitForChild("MainMenu"),
+	menus:WaitForChild("PlayerMenu"),
 	menus:WaitForChild("BattleMenu"),
 }
 

@@ -92,66 +92,69 @@ local ANIMATIONS = {
 }
 
 --// Types
-export type bot = {
-	Name: string,
-	State: "Idle" | "Searching" | "Chasing" | "Attacking" | "Returning" | "Broke" | "Stunned" | "Waiting",
-	Active: boolean,
-	AttackCooldown: number,
-	Model: Model,
-	Tracks: {},
-	Connections: {},
-	Humanoid: Humanoid,
-	RootPart: BasePart,
-	Target: Model,
-	SpawnPart: BasePart,
-	SpawnPosition: Vector3,
-	ChaseRadius: number,
-	ActualHealth: number,
-	TotalHealth: number,
-	Toughness: number,
-	Speed: number,
-	DamageToStun: number,
-	StunDamage: number,
-	BodyParts: {
-		Head: {
-			TotalHealth: number,
-			ActualHealth: number,
-			StunMultiplier: number,
+export type bot = typeof(setmetatable(
+	{} :: {
+		Name: string,
+		State: "Idle" | "Searching" | "Chasing" | "Attacking" | "Returning" | "Broke" | "Stunned" | "Waiting",
+		Active: boolean,
+		AttackCooldown: number,
+		Model: Model,
+		Tracks: {},
+		Connections: {},
+		Humanoid: Humanoid,
+		RootPart: BasePart,
+		Target: Model,
+		SpawnPart: BasePart,
+		SpawnPosition: Vector3,
+		ChaseRadius: number,
+		ActualHealth: number,
+		TotalHealth: number,
+		Toughness: number,
+		Speed: number,
+		DamageToStun: number,
+		StunDamage: number,
+		BodyParts: {
+			Head: {
+				TotalHealth: number,
+				ActualHealth: number,
+				StunMultiplier: number,
+			},
+			Torso: {
+				TotalHealth: number,
+				ActualHealth: number,
+				StunMultiplier: number,
+			},
+			RightArm: {
+				TotalHealth: number,
+				ActualHealth: number,
+				StunMultiplier: number,
+			},
+			LeftArm: {
+				TotalHealth: number,
+				ActualHealth: number,
+				StunMultiplier: number,
+			},
+			RightLeg: {
+				TotalHealth: number,
+				ActualHealth: number,
+				StunMultiplier: number,
+			},
+			LeftLeg: {
+				TotalHealth: number,
+				ActualHealth: number,
+				StunMultiplier: number,
+			},
 		},
-		Torso: {
-			TotalHealth: number,
-			ActualHealth: number,
-			StunMultiplier: number,
+		BrokenParts: { string },
+		Attacks: {
+			Light: { {} },
+			Medium: { {} },
+			Heavy: { {} },
 		},
-		RightArm: {
-			TotalHealth: number,
-			ActualHealth: number,
-			StunMultiplier: number,
-		},
-		LeftArm: {
-			TotalHealth: number,
-			ActualHealth: number,
-			StunMultiplier: number,
-		},
-		RightLeg: {
-			TotalHealth: number,
-			ActualHealth: number,
-			StunMultiplier: number,
-		},
-		LeftLeg: {
-			TotalHealth: number,
-			ActualHealth: number,
-			StunMultiplier: number,
-		},
+		CharactersInBattle: { Model },
 	},
-	BrokenParts: { string },
-	Attacks: {
-		Light: { {} },
-		Medium: { {} },
-		Heavy: { {} },
-	},
-	CharactersInBattle: { Model },
-}
+	BotsManager
+))
 
 --// Functions
 function BotsManager.getBot(botModel: Model)
@@ -165,7 +168,7 @@ function BotsManager.createBot(botName: string)
 		return
 	end
 
-	local bot: bot = {
+	local bot = {
 		Name = botName,
 		State = "Idle",
 		Active = false,
@@ -516,7 +519,7 @@ function BotsManager:activate()
 	self.Active = true
 
 	task.defer(function()
-		while self.Active and task.wait(THINK_RATE) do
+		while task.wait(THINK_RATE) and self.Active do
 			self:think()
 		end
 	end)

@@ -109,6 +109,10 @@ function ProfilesManager.playerAdded(player: Player)
 		end
 	end)
 
+	repeat -- PlayersManager
+		task.wait(0.25)
+	until player:GetAttribute("Table")
+
 	player:SetAttribute("Loaded", true)
 end
 

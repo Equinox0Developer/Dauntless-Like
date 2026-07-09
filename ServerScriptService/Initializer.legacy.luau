@@ -13,6 +13,7 @@ local modules = {
 	serverSystems:WaitForChild("ProfilesManager"):WaitForChild("Ranking"),
 	serverSystems:WaitForChild("ProfilesManager"):WaitForChild("Marketplace"),
 	serverSystems:WaitForChild("ProfilesManager"):WaitForChild("Leaderstats"),
+	serverSystems:WaitForChild("PlayersManager"),
 	clientSystems:WaitForChild("PoolsManager"),
 	serverSystems:WaitForChild("ReplicationManagerServer"),
 	serverSystems:WaitForChild("CharactersManager"),
