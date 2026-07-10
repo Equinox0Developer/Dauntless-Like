@@ -16,7 +16,7 @@ local packet = require(core:WaitForChild("Packet"))
 --// Systems
 local statesManager = require(systems:WaitForChild("StatesManagerClient"))
 local animationsManager = require(systems:WaitForChild("AnimationsManager"))
-local hitboxManager = require(systems:WaitForChild("HitboxManager"))
+local hitboxManager = require(systems:WaitForChild("CastManager"))
 
 --// Data
 local animationsData = require(data:WaitForChild("Animations"))

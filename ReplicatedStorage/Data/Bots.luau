@@ -25,15 +25,15 @@ local Bots = {
 		Attacks = {
 			Light = {
 				{ Name = "Slap", Cooldown = 4 },
-				{ Name = "Stomp", Cooldown = 4 },
+				-- { Name = "Stomp", Cooldown = 4 },
 			},
-			Medium = {
+			--[[Medium = {
 				{ Name = "Spin", Cooldown = 6 },
 				{ Name = "Swing", Cooldown = 6 },
 			},
 			Heavy = {
 				{ Name = "Throw", Cooldown = 8 },
-			},
+			}, ]]
 		},
 	},
 }

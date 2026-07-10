@@ -48,10 +48,12 @@ function updateHealthBar()
 
 	local difference = (actualHealth - lastHealth)
 	local frequency = difference > 0 and 3 or 6
-	
-	healthNumber.Text = `{actualHealth}/{totalHealth}`
+
+	healthNumber.Text = `{math.round(actualHealth)}/{math.round(totalHealth)}`
 
 	spring.target(healthFill, DAMPING_RATIO, frequency, { Size = UDim2.fromScale(scaledSize, 1) })
+
+	lastHealth = actualHealth
 end
 
 function updateStaminaBar()
@@ -62,8 +64,8 @@ function updateStaminaBar()
 	local difference = (actualStamina - lastStamina)
 	local frequency = difference > 0 and 3 or 6
 
-	staminaNumber.Text = `{actualStamina}/{totalStamina}`
-	
+	staminaNumber.Text = `{math.round(actualStamina)}/{math.round(totalStamina)}`
+
 	spring.target(staminaFill, DAMPING_RATIO, frequency, { Size = UDim2.fromScale(scaledSize, 1) })
 
 	lastStamina = actualStamina

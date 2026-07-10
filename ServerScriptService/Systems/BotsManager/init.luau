@@ -26,6 +26,7 @@ local replicationManager = require(systems:WaitForChild("ReplicationManagerServe
 local botsData = require(data:WaitForChild("Bots"))
 
 --// Events
+local updateBattleEvent = packet("UpdateBattle", packet.Any)
 local enteredBattleEvent = packet("EnteredBattle", packet.Any)
 local leftBattleEvent = packet("LeftBattle", packet.Any)
 
@@ -37,8 +38,13 @@ local spawnsFolder = workspace:WaitForChild("Spawns")
 local seed = math.random(1, 56565656)
 local randomGenerator = Random.new(seed)
 
+local animationsFolder = script.Animations
+local attacksFolder = script.Attacks
+
 --// Tables
-local bots = {}
+local botsTables = {}
+
+local botsAttacks = {}
 
 --// Constants
 local THINK_RATE = 1 / 10
@@ -92,73 +98,12 @@ local ANIMATIONS = {
 }
 
 --// Types
-export type bot = typeof(setmetatable(
-	{} :: {
-		Name: string,
-		State: "Idle" | "Searching" | "Chasing" | "Attacking" | "Returning" | "Broke" | "Stunned" | "Waiting",
-		Active: boolean,
-		AttackCooldown: number,
-		Model: Model,
-		Tracks: {},
-		Connections: {},
-		Humanoid: Humanoid,
-		RootPart: BasePart,
-		Target: Model,
-		SpawnPart: BasePart,
-		SpawnPosition: Vector3,
-		ChaseRadius: number,
-		ActualHealth: number,
-		TotalHealth: number,
-		Toughness: number,
-		Speed: number,
-		DamageToStun: number,
-		StunDamage: number,
-		BodyParts: {
-			Head: {
-				TotalHealth: number,
-				ActualHealth: number,
-				StunMultiplier: number,
-			},
-			Torso: {
-				TotalHealth: number,
-				ActualHealth: number,
-				StunMultiplier: number,
-			},
-			RightArm: {
-				TotalHealth: number,
-				ActualHealth: number,
-				StunMultiplier: number,
-			},
-			LeftArm: {
-				TotalHealth: number,
-				ActualHealth: number,
-				StunMultiplier: number,
-			},
-			RightLeg: {
-				TotalHealth: number,
-				ActualHealth: number,
-				StunMultiplier: number,
-			},
-			LeftLeg: {
-				TotalHealth: number,
-				ActualHealth: number,
-				StunMultiplier: number,
-			},
-		},
-		BrokenParts: { string },
-		Attacks: {
-			Light: { {} },
-			Medium: { {} },
-			Heavy: { {} },
-		},
-		CharactersInBattle: { Model },
-	},
-	BotsManager
-))
+local types = require(script.Types)
+export type Bot = typeof(setmetatable({} :: types.Bot, BotsManager))
 
 --// Functions
 function BotsManager.getBot(botModel: Model)
-	return bots[botModel]
+	return botsTables[botModel]
 end
 
 function BotsManager.createBot(botName: string)
@@ -242,7 +187,7 @@ function BotsManager:spawnBot(spawnPart: BasePart)
 	local Position = Vector3.new(spawnPart.Position.X, groundHeight + botSize.Y / 2, spawnPart.Position.Z)
 	botModel:PivotTo(CFrame.new(Position))
 
-	for _, animationInstance in script:GetChildren() do
+	for _, animationInstance in animationsFolder:GetChildren() do
 		self.Tracks[animationInstance.Name] = animator:LoadAnimation(animationInstance)
 	end
 
@@ -258,7 +203,7 @@ function BotsManager:spawnBot(spawnPart: BasePart)
 	self.SpawnPosition = spawnPart.Position
 	self.ChaseRadius = spawnPart:GetAttribute("Radius")
 
-	bots[botModel] = self
+	botsTables[botModel] = self
 
 	botModel.Parent = botsFolder
 
@@ -269,7 +214,7 @@ function BotsManager:despawnBot()
 	self.Active = false
 
 	local botModel = self.Model
-	bots[botModel] = nil
+	botsTables[botModel] = nil
 
 	self.State = "Idle"
 	self.ActualHealth = self.TotalHealth
@@ -356,6 +301,20 @@ function BotsManager:takeDamage(player: Player, damage: number, partName: string
 	if self.ActualHealth <= 0 then
 		self:despawnBot()
 	end
+
+	for character, _ in self.CharactersInBattle do
+		local actualPlayer = Players:GetPlayerFromCharacter(character)
+
+		if not actualPlayer then
+			continue
+		end
+
+		updateBattleEvent:FireClient(actualPlayer, {
+			Name = self.Name,
+			ActualHealth = self.ActualHealth,
+			TotalHealth = self.TotalHealth,
+		})
+	end
 end
 
 function BotsManager:breakPart(bodyPartName: string)
@@ -404,14 +363,32 @@ function BotsManager:checkPlayersInBattle()
 	for character, _ in closeCharacters do
 		if not charactersInBattle[character] then
 			local player = Players:GetPlayerFromCharacter(character)
-			enteredBattleEvent:FireClient(player, self)
+
+			if not player then
+				return
+			end
+
+			enteredBattleEvent:FireClient(player, {
+				Name = self.Name,
+				ActualHealth = self.ActualHealth,
+				TotalHealth = self.TotalHealth,
+			})
 		end
 	end
 
 	for character, _ in charactersInBattle do
 		if not closeCharacters[character] then
 			local player = Players:GetPlayerFromCharacter(character)
-			lef:FireClient(player, self)
+
+			if not player then
+				return
+			end
+
+			leftBattleEvent:FireClient(player, {
+				Name = self.Name,
+				ActualHealth = self.ActualHealth,
+				TotalHealth = self.TotalHealth,
+			})
 		end
 	end
 
@@ -419,7 +396,11 @@ function BotsManager:checkPlayersInBattle()
 end
 
 function BotsManager:updateSearch()
-	local charactersInBattle = self.CharactersInBattle
+	local charactersInBattle = {}
+
+	for character, _ in self.CharactersInBattle do
+		table.insert(charactersInBattle, character)
+	end
 
 	if #charactersInBattle > 0 then
 		local chooseCharacter = charactersInBattle[math.random(1, #charactersInBattle)]
@@ -476,12 +457,14 @@ function BotsManager:updateAttack()
 	local randomNumber = randomGenerator:NextInteger(1, 100)
 	local attackType = nil
 
-	if randomNumber <= ATTACK_CHANCES.Heavy then
+	if randomNumber <= ATTACK_CHANCES.Heavy and self.Attacks["Heavy"] then
 		attackType = "Heavy"
-	elseif randomNumber <= ATTACK_CHANCES.Medium then
+	elseif randomNumber <= ATTACK_CHANCES.Medium and self.Attacks["Medium"] then
 		attackType = "Medium"
-	else
+	elseif self.Attacks["Light"] then
 		attackType = "Light"
+	else
+		return
 	end
 
 	local attacks = self.Attacks[attackType]
@@ -489,8 +472,7 @@ function BotsManager:updateAttack()
 	local randomAttack = attacks[randomNumber]
 
 	self.AttackCooldown = randomAttack.Cooldown
-
-	print(`{self.Name} attacked with: {randomAttack.Name}!`)
+	botsAttacks[self.Name].attack(self, randomAttack.Name)
 end
 
 function BotsManager:updateReturn()
@@ -531,8 +513,12 @@ function BotsManager.initialize()
 			local animationInstance = Instance.new("Animation")
 			animationInstance.Name = `{animationType}_{animationName}`
 			animationInstance.AnimationId = `rbxassetid://{animationId}`
-			animationInstance.Parent = script
+			animationInstance.Parent = animationsFolder
 		end
+	end
+
+	for _, attackModule in attacksFolder:GetChildren() do
+		botsAttacks[attackModule.Name] = require(attackModule)
 	end
 
 	for _, spawnPart in spawnsFolder:GetChildren() do
