@@ -16,49 +16,43 @@ local poolsManager = require(systems:WaitForChild("PoolsManager"))
 local highlightsPool = poolsManager.getPool("Highlights")
 local indicatorsPool = poolsManager.getPool("Indicators")
 
-local randomGenerator = Random.new()
+local seed = math.random(1, 56565656)
+local randomGenerator = Random.new(seed)
 
-local activeIndicators = {}
+local anchorPoolSize = 0
 local activeCount = 0
+
 local heartbeatConnection: RBXScriptConnection? = nil
 
+--// Tables
+local activeIndicators = {}
 local anchorPool = {}
-local anchorPoolSize = 0
 
 --// Constants
 local DAMAGE_COLORS = {
-	Color3.fromRGB(225, 225, 225),
-	Color3.fromRGB(255, 220, 0),
-	Color3.fromRGB(0, 170, 255),
-	Color3.fromRGB(255, 55, 65),
+	Core = Color3.fromRGB(225, 225, 225),
+	Break = Color3.fromRGB(255, 220, 0),
+	Stun = Color3.fromRGB(0, 170, 255),
+	Wound = Color3.fromRGB(255, 55, 65),
 }
 
--- Velocidade inicial pra cima (controla o quanto ele sobe: pico = v^2 / (2 * RISE_GRAVITY))
-local INITIAL_UP_SPEED_MIN = 8
-local INITIAL_UP_SPEED_MAX = 10
+local INITIAL_UP_SPEED_MIN = 8 -- Velocidade inicial pra cima (controla o quanto ele sobe: pico = v^2 / (2 * RISE_GRAVITY)).
+local INITIAL_UP_SPEED_MAX = 10 -- Velocidade inicial pra cima (controla o quanto ele sobe: pico = v^2 / (2 * RISE_GRAVITY)).
 
--- Gravidade enquanto sobe (VelocityY > 0): menor = desacelera mais devagar = sobe mais alto/demorado
-local RISE_GRAVITY = 15
+local RISE_GRAVITY = 15 -- Gravidade enquanto sobe (VelocityY > 0): menor = desacelera mais devagar = sobe mais alto/demorado.
 
--- Gravidade enquanto cai (VelocityY <= 0): maior = acelera mais rápido = cai mais forte/rápido
-local FALL_GRAVITY_MIN = 35
-local FALL_GRAVITY_MAX = 45
+local FALL_GRAVITY_MIN = 35 -- Gravidade enquanto cai (VelocityY <= 0): maior = acelera mais rápido = cai mais forte/rápido.
+local FALL_GRAVITY_MAX = 45 -- Gravidade enquanto cai (VelocityY <= 0): maior = acelera mais rápido = cai mais forte/rápido.
 
--- Espalhamento horizontal só no spawn (posição de nascimento), sem afetar o resto da animação
-local HORIZONTAL_SPREAD = 2.5
+local HORIZONTAL_SPREAD = 2.5 -- Espalhamento horizontal só no spawn (posição de nascimento), sem afetar o resto da animação.
 
--- Velocidade horizontal durante a animação (studs/s): controla o quanto se espalha enquanto sobe/desce
-local LATERAL_DRIFT_MIN = -0.75
-local LATERAL_DRIFT_MAX = 0.75
+local LATERAL_DRIFT_MIN = -0.75 -- Velocidade horizontal durante a animação (studs/s): controla o quanto se espalha enquanto sobe/desce.
+local LATERAL_DRIFT_MAX = 0.75 -- Velocidade horizontal durante a animação (studs/s): controla o quanto se espalha enquanto sobe/desce.
 
--- Tempo total de vida do indicator, em segundos
-local LIFETIME = 1.5
+local LIFETIME = 1.5 -- Tempo total de vida do indicator, em segundos.
 
--- Quanto tempo (segundos) esperar, desde o spawn, antes de começar a sumir
-local FADE_DELAY = 1.25
-
--- Quanto tempo (segundos) o fade em si demora, a partir do momento que começa
-local FADE_DURATION = 0.25
+local FADE_DELAY = 1.25 -- Quanto tempo (segundos) esperar, desde o spawn, antes de começar a sumir.
+local FADE_DURATION = 0.25 -- Quanto tempo (segundos) o fade em si demora, a partir do momento que começa.
 
 --// Functions
 local function getAnchor(worldPosition: Vector3): BasePart
@@ -129,15 +123,7 @@ local function updateIndicators(deltaTime: number)
 	end
 end
 
-function General.hit(bodyPart: BasePart)
-	local highlight = highlightsPool:getUnit()
-	highlight.Adornee = bodyPart
-	highlight.FillColor = Color3.fromRGB(255, 0, 0)
-	highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-	highlight.Parent = bodyPart
-
-	highlightsPool:releaseUnit(highlight, 0.25)
-
+function General.indicator(bodyPart: BasePart, damageType: string, damageValue: number)
 	local indicator = indicatorsPool:getUnit()
 	local label = indicator.Number
 	local stroke = label:FindFirstChildOfClass("UIStroke")
@@ -147,7 +133,8 @@ function General.hit(bodyPart: BasePart)
 	local initialOffset =
 		Vector3.new(randomGenerator:NextNumber(-HORIZONTAL_SPREAD, HORIZONTAL_SPREAD), randomGenerator:NextNumber(0, 1), randomGenerator:NextNumber(-HORIZONTAL_SPREAD, HORIZONTAL_SPREAD))
 
-	label.TextColor3 = DAMAGE_COLORS[randomGenerator:NextInteger(1, #DAMAGE_COLORS)]
+	label.Text = damageValue
+	label.TextColor3 = DAMAGE_COLORS[damageType]
 	label.TextTransparency = 0
 
 	if stroke then
@@ -176,6 +163,16 @@ function General.hit(bodyPart: BasePart)
 	if not heartbeatConnection then
 		heartbeatConnection = RunService.Heartbeat:Connect(updateIndicators)
 	end
+end
+
+function General.highlight(bodyPart: BasePart)
+	local highlight = highlightsPool:getUnit()
+	highlight.Adornee = bodyPart
+	highlight.FillColor = Color3.fromRGB(255, 0, 0)
+	highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+	highlight.Parent = bodyPart
+
+	highlightsPool:releaseUnit(highlight, 0.25)
 end
 
 --// Return

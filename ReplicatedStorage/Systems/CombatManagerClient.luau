@@ -111,7 +111,7 @@ local function setupTracks(weaponName: string)
 	table.clear(connections)
 
 	for i = 1, attacksCombo do
-		local track = animationsManager.getTrack(`{weaponName}_Attack_{i}`)
+		local track = animationsManager.getTrack(`{weaponName}_Attacks_{i}`)
 
 		tracks[i] = track
 
@@ -163,7 +163,7 @@ local function setupTracks(weaponName: string)
 end
 
 local function setupCombo(weaponName: string)
-	attacksCombo = #animationsData.Weapons[weaponName].Attack
+	attacksCombo = #animationsData.Weapons[weaponName].Attacks
 	actualAttack = attacksCombo
 
 	if cooldowns then
@@ -171,7 +171,7 @@ local function setupCombo(weaponName: string)
 	end
 
 	for i = 1, attacksCombo do
-		cooldowns[i] = weaponsData[weaponName].Cooldown[i]
+		cooldowns[i] = weaponsData[weaponName].Hits[i].Cooldown
 	end
 end
 

@@ -39,7 +39,7 @@ local function attack(player: Player, actualAttack: number)
 	end
 
 	local weaponData = weaponsData[player:GetAttribute("Weapon")]
-	local attackCooldown = weaponData.Cooldown[actualAttack]
+	local attackCooldown = weaponData.Hits[actualAttack].Cooldown
 	local stateName = `Attack{actualAttack}`
 
 	if stateManager.canPerformAction(character, "Attack") and not stateManager.getState(character, stateName) then
@@ -80,9 +80,7 @@ local function hit(player: Player, botModel: Model, partName: string, actualAtta
 			return
 		end
 
-		local damage = weaponData.Damage[actualAttack]
-
-		bot:takeDamage(player, damage, partName)
+		bot:takeDamage(player, weaponData.Hits[actualAttack], partName)
 	end
 end
 

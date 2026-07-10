@@ -1,27 +1,17 @@
---[[
---- Health is the amount of damage a bot can take before being defeated.
-
---- Toughness is the general damage reduction.
-        - (100 is the base value, with 200 it become immortal and with 0, he dies with one hit)
-
---- Stability is the stun damage needed to stun the bot.
-        - (100 is the base value, with 200 it becomes immune to stuns and with 0, he gets stunned with one hit)
-
---- Stunnable parts values are the stun damage multipliers of each part.
-        - (Head = 200, Torso = 100, RightLeg = 150, LeftLeg = 150)
-
---- Breakable parts values are the durability of each part.
-        - (Head = 75, RightArm = 100, LeftArm = 100, RightLeg = 125, LeftLeg = 125)
-]]
-
 local Bots = {
 	Bot = {
 		Health = 1000,
-		Toughness = 100,
-		Stability = 100,
+		Toughness = 100, -- Damage resistance
+		Stability = 100, -- Stun resistance
 		Speed = 10,
-		StunnableParts = { Head = 200, Torso = 100, RightLeg = 150, LeftLeg = 150 },
-		BreakableParts = { Head = 75, RightArm = 100, LeftArm = 100, RightLeg = 125, LeftLeg = 125 },
+		BodyParts = {
+			Head = { Health = 75, StunMultiplier = 2 },
+			Torso = { Health = 0, StunMultiplier = 1 },
+			RightArm = { Health = 100, StunMultiplier = 0 },
+			LeftArm = { Health = 100, StunMultiplier = 0 },
+			RightLeg = { Health = 125, StunMultiplier = 1.5 },
+			LeftLeg = { Health = 125, StunMultiplier = 1.5 },
+		},
 		Attacks = {
 			Light = {
 				{ Name = "Slap", Cooldown = 4 },

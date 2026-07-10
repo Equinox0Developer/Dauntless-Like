@@ -138,34 +138,34 @@ function BotsManager.createBot(botName: string)
 		StunDamage = 0,
 		BodyParts = {
 			Head = {
-				TotalHealth = botData.BreakableParts.Head,
-				ActualHealth = botData.BreakableParts.Head,
-				StunMultiplier = botData.StunnableParts.Head,
+				TotalHealth = botData.BodyParts.Head.Health,
+				ActualHealth = botData.BodyParts.Head.Health,
+				StunMultiplier = botData.BodyParts.Head.StunMultiplier,
 			},
 			Torso = {
-				TotalHealth = botData.BreakableParts.Head,
-				ActualHealth = botData.BreakableParts.Torso,
-				StunMultiplier = botData.StunnableParts.Torso,
+				TotalHealth = botData.BodyParts.Torso.Health,
+				ActualHealth = botData.BodyParts.Torso.Health,
+				StunMultiplier = botData.BodyParts.Torso.StunMultiplier,
 			},
 			RightArm = {
-				TotalHealth = botData.BreakableParts.Head,
-				ActualHealth = botData.BreakableParts.RightArm,
-				StunMultiplier = botData.StunnableParts.RightArm,
+				TotalHealth = botData.BodyParts.RightArm.Health,
+				ActualHealth = botData.BodyParts.RightArm.Health,
+				StunMultiplier = botData.BodyParts.RightArm.StunMultiplier,
 			},
 			LeftArm = {
-				TotalHealth = botData.BreakableParts.Head,
-				ActualHealth = botData.BreakableParts.LeftArm,
-				StunMultiplier = botData.StunnableParts.LeftArm,
+				TotalHealth = botData.BodyParts.LeftArm.Health,
+				ActualHealth = botData.BodyParts.LeftArm.Health,
+				StunMultiplier = botData.BodyParts.LeftArm.StunMultiplier,
 			},
 			RightLeg = {
-				TotalHealth = botData.BreakableParts.Head,
-				ActualHealth = botData.BreakableParts.RightLeg,
-				StunMultiplier = botData.StunnableParts.RightLeg,
+				TotalHealth = botData.BodyParts.RightLeg.Health,
+				ActualHealth = botData.BodyParts.RightLeg.Health,
+				StunMultiplier = botData.BodyParts.RightLeg.StunMultiplier,
 			},
 			LeftLeg = {
-				TotalHealth = botData.BreakableParts.Head,
-				ActualHealth = botData.BreakableParts.LeftLeg,
-				StunMultiplier = botData.StunnableParts.LeftLeg,
+				TotalHealth = botData.BodyParts.LeftLeg.Health,
+				ActualHealth = botData.BodyParts.LeftLeg.Health,
+				StunMultiplier = botData.BodyParts.LeftLeg.StunMultiplier,
 			},
 		},
 		BrokenParts = {},
@@ -269,20 +269,24 @@ function BotsManager:animateState()
 	fallTrack:Play()
 end
 
-function BotsManager:takeDamage(player: Player, damage: number, partName: string)
+function BotsManager:takeDamage(player: Player, attackData: { CoreDamage: number, BreakMultiplier: number, StunMultiplier: number, WoundMultiplier: number }, partName: string)
 	if self.State == "Idle" or self.State == "Returning" then
 		self.State = "Searching"
 	end
 
-	self.ActualHealth -= damage / (self.Toughness / 100)
-
 	local bodyPartName = BODY_PARTS[partName]
 	local bodyPartValues = self.BodyParts[bodyPartName]
 
-	if bodyPartValues.ActualHealth and bodyPartValues.ActualHealth > 0 then
-		bodyPartValues.ActualHealth -= damage
+	local damageReduction = (self.Toughness / 100)
+	local coreDamage = attackData.CoreDamage / damageReduction
+	local breakDamage = coreDamage * attackData.BreakMultiplier
+	local stunDamage = coreDamage * attackData.StunMultiplier * bodyPartValues.StunMultiplier
+	--local woundDamage = coreDamage * attackData.WoundMultiplier
 
-		-- print(`{bodyPartName}'s health: {bodyPartValues.ActualHealth}`)
+	self.ActualHealth -= coreDamage
+
+	if bodyPartValues.ActualHealth and bodyPartValues.ActualHealth > 0 then
+		bodyPartValues.ActualHealth -= breakDamage
 
 		if bodyPartValues.ActualHealth <= 0 then
 			self:breakPart(bodyPartName)
@@ -290,12 +294,16 @@ function BotsManager:takeDamage(player: Player, damage: number, partName: string
 	end
 
 	if bodyPartValues.StunMultiplier then
-		self.StunDamage += damage * (bodyPartValues.StunMultiplier / 100)
+		self.StunDamage += stunDamage
 	end
 
-	replicationManager.replicate(player, 50, "Weapons", { botModel = self.Model, bodyPartName = bodyPartName })
-
-	-- print(`{self.Name}'s health: {self.ActualHealth}`)
+	replicationManager.replicate(player, 50, "Weapons", {
+		BotModel = self.Model,
+		BodyPartName = bodyPartName,
+		CoreDamage = coreDamage,
+		BreakDamage = breakDamage,
+		StunDamage = stunDamage --[[, WoundDamage = woundDamage]],
+	})
 
 	if self.State ~= "Stunned" and self.State ~= "Waiting" and self.StunDamage >= self.DamageToStun then
 		self:stunBot()
