@@ -54,6 +54,9 @@ local STUNNED_DURATION = 10
 
 local CLOSE_DISTANCE = 10
 
+local TURN_SMOOTHNESS = 0.6
+local TURN_TOLERANCE = 0.99
+
 local ATTACK_CHANCES = {
 	Light = 60,
 	Medium = 30,
@@ -340,6 +343,44 @@ function BotsManager:stunBot()
 	end)
 end
 
+function BotsManager:faceTarget()
+	local target = self.Target
+
+	if not target or not target.PrimaryPart then
+		return
+	end
+
+	local botPosition = self.RootPart.Position
+	local targetPosition = target.PrimaryPart.Position
+	local direction = Vector3.new(targetPosition.X - botPosition.X, 0, targetPosition.Z - botPosition.Z)
+
+	if direction.Magnitude > 0.01 then
+		local goalCFrame = CFrame.new(botPosition, botPosition + direction)
+		self.RootPart.CFrame = self.RootPart.CFrame:Lerp(goalCFrame, TURN_SMOOTHNESS)
+	end
+end
+
+function BotsManager:isFacingTarget()
+	local target = self.Target
+
+	if not target or not target.PrimaryPart then
+		return false
+	end
+
+	local botPosition = self.RootPart.Position
+	local targetPosition = target.PrimaryPart.Position
+	local direction = Vector3.new(targetPosition.X - botPosition.X, 0, targetPosition.Z - botPosition.Z)
+
+	if direction.Magnitude < 0.01 then
+		return true
+	end
+
+	local lookVector = self.RootPart.CFrame.LookVector
+	local dot = lookVector.Unit:Dot(direction.Unit)
+
+	return dot >= TURN_TOLERANCE
+end
+
 function BotsManager:isTargetInRange()
 	return (self.Target.PrimaryPart.Position - self.SpawnPosition).Magnitude < self.ChaseRadius
 end
@@ -451,6 +492,12 @@ function BotsManager:updateAttack()
 	self.AttackCooldown -= THINK_RATE
 
 	if self.AttackCooldown > 0 then
+		return
+	end
+
+	self:faceTarget()
+
+	if not self:isFacingTarget() then
 		return
 	end
 

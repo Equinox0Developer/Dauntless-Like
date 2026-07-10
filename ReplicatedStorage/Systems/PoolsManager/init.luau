@@ -17,16 +17,8 @@ local pools = {}
 local runningSide = RunService:IsServer() and "Server" or "Client"
 
 --// Types
-export type Pool = {
-	name: string,
-	minCapacity: number,
-	maxCapacity: number,
-	createFunction: () -> Instance | Model,
-	resetFunction: Instance | Model,
-	folder: Instance,
-	inStock: { Instance | Model },
-	inUse: { Instance | Model },
-}
+local types = require(script.Types)
+export type Pool = typeof(setmetatable({} :: types.Pool, PoolsManager))
 
 --// Functions
 function PoolsManager.initialize()
@@ -36,11 +28,11 @@ function PoolsManager.initialize()
 	end
 end
 
-function PoolsManager.createPool(poolName: string, createFunction: () -> Instance | Model, resetFunction: Instance | Model, initialStock: number?, minCapacity: number?, maxCapacity: number?): Pool
+function PoolsManager.createPool(poolName: string, createFunction: () -> Instance | Model, resetFunction: (Instance) -> any, initialStock: number?, minCapacity: number?, maxCapacity: number?): Pool
 	local poolFolder = Instance.new("Folder", poolsFolder)
 	poolFolder.Name = poolName
 
-	local pool: Pool = {
+	local pool = {
 		name = poolName,
 		minCapacity = minCapacity or 0,
 		maxCapacity = maxCapacity or 1000,
@@ -52,7 +44,9 @@ function PoolsManager.createPool(poolName: string, createFunction: () -> Instanc
 	}
 
 	pools[poolName] = pool
+
 	setmetatable(pool, PoolsManager)
+
 	pool:createUnit(initialStock or pool.minCapacity)
 
 	return pool
