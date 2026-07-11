@@ -3,7 +3,6 @@ local CombatManagerServer = {}
 
 --// Services
 local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 
@@ -30,39 +29,44 @@ local hitEvent = packet("Hit", packet.Instance, packet.String, packet.NumberU8)
 local seed = 56565656
 local randomGenerator = Random.new(seed)
 
---// Tables
-local movementLocks = {}
-
 --// Constants
-local MAX_HORIZONTAL_FORCE = 1e6
+local VIOLATION_TOLERANCE = 1.5 -- 50% de folga, absorve lag/ping sem gerar falso positivo
+local MAX_VIOLATIONS = 3 -- quantas vezes tolera antes de agir
+
+--// Tables
+local violationCounts = {} -- [player] = number
 
 --// Functions
-local function clearMovementLock(player: Player)
-	local lock = movementLocks[player]
+local function checkSpeedViolation(player: Player, character: Model, allowedSpeed: number, checkDuration: number)
+	local rootPart = character.PrimaryPart
 
-	if lock then
-		lock.connection:Disconnect()
-
-		if lock.constraint then
-			lock.constraint:Destroy()
-		end
-
-		if lock.attachment then
-			lock.attachment:Destroy()
-		end
-
-		movementLocks[player] = nil
+	if not rootPart then
+		return
 	end
+
+	local startPosition = rootPart.Position
+
+	task.delay(checkDuration, function()
+		if not character.Parent or not player.Parent then
+			return
+		end
+
+		local displacement = rootPart.Position - startPosition
+		local horizontalDistance = Vector3.new(displacement.X, 0, displacement.Z).Magnitude
+		local maxAllowed = (allowedSpeed * checkDuration) * VIOLATION_TOLERANCE
+
+		if horizontalDistance > maxAllowed then
+			violationCounts[player] = (violationCounts[player] or 0) + 1
+
+			if violationCounts[player] >= MAX_VIOLATIONS then
+				player:Kick("Movimento inconsistente detectado durante ataque.")
+			end
+		end
+	end)
 end
 
 local function applySlowness(player: Player, character: Model, humanoid: Humanoid, slowness: number, duration: number)
 	if slowness <= 0 then
-		return
-	end
-
-	local rootPart = character.PrimaryPart
-
-	if not rootPart then
 		return
 	end
 
@@ -74,53 +78,24 @@ local function applySlowness(player: Player, character: Model, humanoid: Humanoi
 	local baseWalkSpeed = player:GetAttribute("BaseWalkSpeed")
 	local baseJumpPower = player:GetAttribute("BaseJumpPower")
 
-	clearMovementLock(player)
-
 	local allowedSpeed = baseWalkSpeed * (1 - slowness / 100)
 
 	humanoid.WalkSpeed = allowedSpeed
 	humanoid.JumpPower = 0
 
-	local attachment = Instance.new("Attachment")
-	attachment.Name = "MovementLockAttachment"
-	attachment.Parent = rootPart
+	checkSpeedViolation(player, character, allowedSpeed, duration)
 
-	local linearVelocity = Instance.new("LinearVelocity")
-	linearVelocity.Name = "MovementLock"
-	linearVelocity.Attachment0 = attachment
-	linearVelocity.RelativeTo = Enum.ActuatorRelativeTo.World
-	linearVelocity.ForceLimitMode = Enum.ForceLimitMode.PerAxis
-	linearVelocity.MaxAxesForce = Vector3.new(MAX_HORIZONTAL_FORCE, 0, MAX_HORIZONTAL_FORCE)
-	linearVelocity.VectorVelocity = Vector3.new(0, 0, 0)
-	linearVelocity.Parent = rootPart
-
-	local elapsed = 0
-
-	local connection
-	connection = RunService.Heartbeat:Connect(function(deltaTime)
-		elapsed += deltaTime
-
-		if elapsed >= duration or not character.Parent or humanoid.Health <= 0 then
-			humanoid.WalkSpeed = baseWalkSpeed
-			humanoid.JumpPower = baseJumpPower
-
-			player:SetAttribute("BaseWalkSpeed", nil)
-			player:SetAttribute("BaseJumpPower", nil)
-
-			clearMovementLock(player)
+	task.delay(duration, function()
+		if not character.Parent then
 			return
 		end
 
-		local moveDirection = humanoid.MoveDirection
+		humanoid.WalkSpeed = baseWalkSpeed
+		humanoid.JumpPower = baseJumpPower
 
-		if moveDirection.Magnitude > 0.05 then
-			linearVelocity.VectorVelocity = moveDirection.Unit * allowedSpeed
-		else
-			linearVelocity.VectorVelocity = Vector3.new(0, 0, 0)
-		end
+		player:SetAttribute("BaseWalkSpeed", nil)
+		player:SetAttribute("BaseJumpPower", nil)
 	end)
-
-	movementLocks[player] = { connection = connection, attachment = attachment, constraint = linearVelocity }
 end
 
 local function attack(player: Player, actualAttack: number)
@@ -195,12 +170,13 @@ local function hit(player: Player, botModel: Model, partName: string, actualAtta
 end
 
 function CombatManagerServer.playerRemoving(player: Player)
-	clearMovementLock(player)
+	violationCounts[player] = nil
 end
 
 function CombatManagerServer.initialize()
 	attackEvent.OnServerEvent:Connect(attack)
 	hitEvent.OnServerEvent:Connect(hit)
+	Players.PlayerRemoving:Connect(CombatManagerServer.playerRemoving)
 end
 
 --// Return
