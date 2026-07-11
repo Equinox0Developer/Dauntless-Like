@@ -123,7 +123,7 @@ local function updateIndicators(deltaTime: number)
 	end
 end
 
-function General.indicator(bodyPart: BasePart, damageType: string, damageValue: number)
+function General.indicator(bodyPart: BasePart, damageType: string, damageValue: number, critical: boolean)
 	local indicator = indicatorsPool:getUnit()
 	local label = indicator.Number
 	local stroke = label:FindFirstChildOfClass("UIStroke")
@@ -133,7 +133,9 @@ function General.indicator(bodyPart: BasePart, damageType: string, damageValue: 
 	local initialOffset =
 		Vector3.new(randomGenerator:NextNumber(-HORIZONTAL_SPREAD, HORIZONTAL_SPREAD), randomGenerator:NextNumber(0, 1), randomGenerator:NextNumber(-HORIZONTAL_SPREAD, HORIZONTAL_SPREAD))
 
-	label.Text = damageValue
+	local criticalSufix = critical and "!" or ""
+
+	label.Text = damageValue .. criticalSufix
 	label.TextColor3 = DAMAGE_COLORS[damageType]
 	label.TextTransparency = 0
 

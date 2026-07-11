@@ -27,8 +27,8 @@ Bot.Slap = function(bot: Bot)
 	local botModel = bot.Model
 
 	local parameters: Parameters = {
-		CFrame = botModel.PrimaryPart.CFrame * CFrame.new(0, -2, -4),
-		Size = Vector3.new(8, 8, 8),
+		CFrame = botModel.PrimaryPart.CFrame * CFrame.new(0, -3, -5),
+		Size = Vector3.new(10, 10, 10),
 		WillDebug = true,
 	}
 

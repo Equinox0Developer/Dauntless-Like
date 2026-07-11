@@ -45,19 +45,31 @@ function AnimationsManager.stopAllAnimations()
 end
 
 function AnimationsManager.changeIdleAnimations()
-	local weaponName = player:GetAttribute("Weapon")
+	local animate
 
-	local animate = character:WaitForChild("Animate")
-	animate.idle.Animation1.AnimationId = animationsAssets[weaponName]["Idle_1"].AnimationId
-	animate.idle.Animation2.AnimationId = animationsAssets[weaponName]["Idle_1"].AnimationId
+	repeat
+		task.wait(0.1)
+		animate = character:FindFirstChild("Animate")
+	until animate or not character
+	
+	local weaponName = player:GetAttribute("Weapon")
+	
+	animate:WaitForChild("idle").Animation1.AnimationId = animationsAssets[weaponName]["Idle_1"].AnimationId
+	animate:WaitForChild("idle").Animation2.AnimationId = animationsAssets[weaponName]["Idle_1"].AnimationId
 end
 
 function AnimationsManager.changeMovementAnimations()
+	local animate
+	
+	repeat
+		task.wait(0.1)
+		animate = character:FindFirstChild("Animate")
+	until animate or not character
+	
 	local weaponName = player:GetAttribute("Weapon")
-
-	local animate = character:WaitForChild("Animate")
-	animate.walk.WalkAnim.AnimationId = animationsAssets[weaponName]["Walk_1"].AnimationId
-	animate.run.RunAnim.AnimationId = animationsAssets[weaponName]["Run_1"].AnimationId
+	
+	animate:WaitForChild("walk").WalkAnim.AnimationId = animationsAssets[weaponName]["Walk_1"].AnimationId
+	animate:WaitForChild("run").RunAnim.AnimationId = animationsAssets[weaponName]["Run_1"].AnimationId
 end
 
 function AnimationsManager.characterAdded(model: Model)

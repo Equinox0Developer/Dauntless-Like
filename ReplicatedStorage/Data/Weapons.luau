@@ -2,10 +2,10 @@ local Weapons = {
 	Sword = {
 		Range = 12,
 		Hits = {
-			{ CoreDamage = 5, Cooldown = 0.43, BreakMultiplier = 1.2, StunMultiplier = 0.5, WoundMultiplier = 0 },
-			{ CoreDamage = 5, Cooldown = 0.53, BreakMultiplier = 1.2, StunMultiplier = 0.5, WoundMultiplier = 0 },
-			{ CoreDamage = 5, Cooldown = 0.79, BreakMultiplier = 1.2, StunMultiplier = 0.5, WoundMultiplier = 0 },
-			{ CoreDamage = 7.5, Cooldown = 1.6, BreakMultiplier = 1.4, StunMultiplier = 1.0, WoundMultiplier = 0 },
+			{ Cooldown = 0.45, CriticalChance = 10, CoreDamage = 10, BreakMultiplier = 1.2, StunMultiplier = 0.5, WoundMultiplier = 0, Slowness = 70 },
+			{ Cooldown = 0.55, CriticalChance = 10, CoreDamage = 10, BreakMultiplier = 1.2, StunMultiplier = 0.5, WoundMultiplier = 0, Slowness = 70 },
+			{ Cooldown = 0.79, CriticalChance = 10, CoreDamage = 10, BreakMultiplier = 1.2, StunMultiplier = 0.5, WoundMultiplier = 0, Slowness = 70 },
+			{ Cooldown = 0.75, CriticalChance = 20, CoreDamage = 15, BreakMultiplier = 1.4, StunMultiplier = 1.0, WoundMultiplier = 0, Slowness = 90 },
 		},
 	},
 }

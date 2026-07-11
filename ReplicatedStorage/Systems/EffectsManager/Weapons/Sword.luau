@@ -14,6 +14,7 @@ local generalEffects = require(script.Parent.General)
 export type effectData = {
 	BotModel: Model,
 	BodyPartName: string,
+	Critical: boolean,
 	CoreDamage: number,
 	BreakDamage: number,
 	StunDamage: number,
@@ -24,10 +25,28 @@ export type effectData = {
 function Sword.replicate(localPlayer: Player, casterCharacter: Model, effectData: effectData)
 	local bodyPart = effectData.BotModel[effectData.BodyPartName]
 
-	generalEffects.indicator(bodyPart, "Core", effectData.CoreDamage)
-	generalEffects.indicator(bodyPart, "Break", effectData.BreakDamage)
-	generalEffects.indicator(bodyPart, "Stun", effectData.StunDamage)
-	--generalEffects.indicator(bodyPart, "Wound", effectData.WoundDamage)
+	local coreDamage = effectData.CoreDamage
+	local breakDamage = effectData.BreakDamage
+	local stunDamage = effectData.StunDamage
+	--local woundDamage = effectData.WoundDamage
+
+	if coreDamage == 0 then
+		return
+	end
+
+	local critical = effectData.Critical
+
+	generalEffects.indicator(bodyPart, "Core", coreDamage, critical)
+
+	if breakDamage > 0 then
+		generalEffects.indicator(bodyPart, "Break", breakDamage, critical)
+	end
+	if stunDamage > 0 then
+		generalEffects.indicator(bodyPart, "Stun", stunDamage, critical)
+	end
+	--[[if woundDamage > 0 then
+		generalEffects.indicator(bodyPart, "Wound", woundDamage, critical)
+	end]]
 
 	generalEffects.highlight(bodyPart)
 end

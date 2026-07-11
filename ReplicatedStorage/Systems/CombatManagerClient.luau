@@ -28,6 +28,8 @@ local hitEvent = packet("Hit", packet.Instance, packet.String, packet.NumberU8)
 
 --// Variables
 local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
 
 local ready = true
 
@@ -197,9 +199,9 @@ end
 
 function CombatManagerClient.attack()
 	if statesManager.canPerformAction("Attack") and ready then
-		local character = player.Character
+		local isGrounded = humanoid.FloorMaterial ~= Enum.Material.Air
 
-		if not character then
+		if not isGrounded or not character then
 			return
 		end
 
@@ -213,6 +215,16 @@ function CombatManagerClient.attack()
 
 		attackEvent:Fire(actualAttack)
 	end
+end
+
+function CombatManagerClient.characterAdded(model: Model)
+	character = model
+	humanoid = character:WaitForChild("Humanoid")
+end
+
+function CombatManagerClient.characterRemoving()
+	character = nil
+	humanoid = nil
 end
 
 function CombatManagerClient.initialize()

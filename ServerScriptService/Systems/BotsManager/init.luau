@@ -134,7 +134,7 @@ function BotsManager.createBot(botName: string)
 		TotalHealth = botData.Health,
 		Toughness = botData.Toughness,
 		Speed = botData.Speed,
-		DamageToStun = (botData.Health * 0.05) * (botData.Stability / 100),
+		DamageToStun = (botData.Health * 0.2) * (botData.Stability / 100),
 		StunDamage = 0,
 		BodyParts = {
 			Head = {
@@ -269,63 +269,70 @@ function BotsManager:animateState()
 	fallTrack:Play()
 end
 
-function BotsManager:takeDamage(player: Player, attackData: { CoreDamage: number, BreakMultiplier: number, StunMultiplier: number, WoundMultiplier: number }, partName: string)
+function BotsManager:takeDamage(player: Player, attackData: { CoreDamage: number, BreakMultiplier: number, StunMultiplier: number, WoundMultiplier: number }, critical: boolean, partName: string)
 	if self.State == "Idle" or self.State == "Returning" then
 		self.State = "Searching"
 	end
+
+	local criticalMultiplier = critical and 2 or 1
 
 	local bodyPartName = BODY_PARTS[partName]
 	local bodyPartValues = self.BodyParts[bodyPartName]
 
 	local damageReduction = (self.Toughness / 100)
-	local coreDamage = attackData.CoreDamage / damageReduction
+	local coreDamage = (attackData.CoreDamage * criticalMultiplier) / damageReduction
 	local breakDamage = coreDamage * attackData.BreakMultiplier
 	local stunDamage = coreDamage * attackData.StunMultiplier * bodyPartValues.StunMultiplier
 	--local woundDamage = coreDamage * attackData.WoundMultiplier
 
 	self.ActualHealth -= coreDamage
+	--print(`{self.Name} health is now: {self.ActualHealth}.`)
 
-	if bodyPartValues.ActualHealth and bodyPartValues.ActualHealth > 0 then
+	if not self.BrokenParts[bodyPartName] then
 		bodyPartValues.ActualHealth -= breakDamage
-
+		--print(`{bodyPartName} health is now: {bodyPartValues.ActualHealth}.`)
 		if bodyPartValues.ActualHealth <= 0 then
 			self:breakPart(bodyPartName)
+			print(`{bodyPartName} broke!`)
 		end
 	end
 
-	if bodyPartValues.StunMultiplier then
-		self.StunDamage += stunDamage
-	end
-
-	replicationManager.replicate(player, 50, "Weapons", {
-		BotModel = self.Model,
-		BodyPartName = bodyPartName,
-		CoreDamage = coreDamage,
-		BreakDamage = breakDamage,
-		StunDamage = stunDamage --[[, WoundDamage = woundDamage]],
-	})
+	self.StunDamage += stunDamage
+	--print(`{self.Name} stun damage is now: {self.StunDamage}.`)
 
 	if self.State ~= "Stunned" and self.State ~= "Waiting" and self.StunDamage >= self.DamageToStun then
 		self:stunBot()
+		print(`{self.Name} stunned!`)
 	end
 
 	if self.ActualHealth <= 0 then
 		self:despawnBot()
 	end
 
-	for character, _ in self.CharactersInBattle do
-		local actualPlayer = Players:GetPlayerFromCharacter(character)
-
-		if not actualPlayer then
-			continue
-		end
-
-		updateBattleEvent:FireClient(actualPlayer, {
-			Name = self.Name,
-			ActualHealth = self.ActualHealth,
-			TotalHealth = self.TotalHealth,
+	task.defer(function()
+		replicationManager.replicate(player, 50, "Weapons", {
+			BotModel = self.Model,
+			BodyPartName = bodyPartName,
+			Critical = critical,
+			CoreDamage = coreDamage,
+			BreakDamage = breakDamage,
+			StunDamage = stunDamage --[[, WoundDamage = woundDamage]],
 		})
-	end
+
+		for character, _ in self.CharactersInBattle do
+			local actualPlayer = Players:GetPlayerFromCharacter(character)
+
+			if not actualPlayer then
+				continue
+			end
+
+			updateBattleEvent:FireClient(actualPlayer, {
+				Name = self.Name,
+				ActualHealth = self.ActualHealth,
+				TotalHealth = self.TotalHealth,
+			})
+		end
+	end)
 end
 
 function BotsManager:breakPart(bodyPartName: string)
