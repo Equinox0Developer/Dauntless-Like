@@ -41,9 +41,11 @@ function Sword.replicate(localPlayer: Player, casterCharacter: Model, effectData
 	if breakDamage > 0 then
 		generalEffects.indicator(bodyPart, "Break", breakDamage, critical)
 	end
+	
 	if stunDamage > 0 then
 		generalEffects.indicator(bodyPart, "Stun", stunDamage, critical)
 	end
+	
 	--[[if woundDamage > 0 then
 		generalEffects.indicator(bodyPart, "Wound", woundDamage, critical)
 	end]]

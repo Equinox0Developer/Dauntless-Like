@@ -299,6 +299,11 @@ function BotsManager:takeDamage(player: Player, attackData: { CoreDamage: number
 	self.ActualHealth -= coreDamage
 	--print(`{self.Name} health is now: {self.ActualHealth}.`)
 
+	if self.ActualHealth <= 0 then
+		self:despawnBot()
+		return
+	end
+
 	if not self.BrokenParts[bodyPartName] then
 		bodyPartValues.ActualHealth -= breakDamage
 		--print(`{bodyPartName} health is now: {bodyPartValues.ActualHealth}.`)
@@ -314,10 +319,6 @@ function BotsManager:takeDamage(player: Player, attackData: { CoreDamage: number
 	if self.State ~= "Stunned" and self.State ~= "Waiting" and self.StunDamage >= self.DamageToStun then
 		self:stunBot()
 		print(`{self.Name} stunned!`)
-	end
-
-	if self.ActualHealth <= 0 then
-		self:despawnBot()
 	end
 
 	task.defer(function()
