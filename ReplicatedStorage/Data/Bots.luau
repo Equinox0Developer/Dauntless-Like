@@ -14,7 +14,7 @@ local Bots = {
 		},
 		Attacks = {
 			Light = {
-				{ Name = "Slap", Cooldown = 4 },
+				{ Name = "Slap", Cooldown = 4, AnimationId = 106270295385826 },
 				-- { Name = "Stomp", Cooldown = 4 },
 			},
 			--[[Medium = {

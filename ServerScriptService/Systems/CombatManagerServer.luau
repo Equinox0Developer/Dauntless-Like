@@ -29,15 +29,16 @@ local hitEvent = packet("Hit", packet.Instance, packet.String, packet.NumberU8)
 local seed = 56565656
 local randomGenerator = Random.new(seed)
 
---// Constants
-local VIOLATION_TOLERANCE = 1.5 -- 50% de folga, absorve lag/ping sem gerar falso positivo
-local MAX_VIOLATIONS = 3 -- quantas vezes tolera antes de agir
-
 --// Tables
-local violationCounts = {} -- [player] = number
+local violationCounts = {}
+local slonessHistory = {}
+
+--// Constants
+local VIOLATION_TOLERANCE = 1.5
+local MAX_VIOLATIONS = 3
 
 --// Functions
-local function checkSpeedViolation(player: Player, character: Model, allowedSpeed: number, checkDuration: number)
+local function checkSpeedViolation(player: Player, character: Model, allowedSpeed: number, checkDuration: number, myGen: number)
 	local rootPart = character.PrimaryPart
 
 	if not rootPart then
@@ -51,6 +52,10 @@ local function checkSpeedViolation(player: Player, character: Model, allowedSpee
 			return
 		end
 
+		if slonessHistory[player] ~= myGen then
+			return
+		end
+
 		local displacement = rootPart.Position - startPosition
 		local horizontalDistance = Vector3.new(displacement.X, 0, displacement.Z).Magnitude
 		local maxAllowed = (allowedSpeed * checkDuration) * VIOLATION_TOLERANCE
@@ -59,7 +64,7 @@ local function checkSpeedViolation(player: Player, character: Model, allowedSpee
 			violationCounts[player] = (violationCounts[player] or 0) + 1
 
 			if violationCounts[player] >= MAX_VIOLATIONS then
-				player:Kick("Movimento inconsistente detectado durante ataque.")
+				player:Kick("Are you cheating?")
 			end
 		end
 	end)
@@ -83,10 +88,18 @@ local function applySlowness(player: Player, character: Model, humanoid: Humanoi
 	humanoid.WalkSpeed = allowedSpeed
 	humanoid.JumpPower = 0
 
-	checkSpeedViolation(player, character, allowedSpeed, duration)
+	local actualSlow = (slonessHistory[player] or 0) + 1
+	slonessHistory[player] = actualSlow
+
+	checkSpeedViolation(player, character, allowedSpeed, duration, actualSlow)
 
 	task.delay(duration, function()
 		if not character.Parent then
+			return
+		end
+
+		-- Só restaura se for a slowness mais recente
+		if slonessHistory[player] ~= actualSlow then
 			return
 		end
 

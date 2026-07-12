@@ -46,6 +46,8 @@ local botsTables = {}
 
 local botsAttacks = {}
 
+local animationsCache = {}
+
 --// Constants
 local THINK_RATE = 1 / 10
 
@@ -87,7 +89,7 @@ local BODY_PARTS = {
 	LeftLeg = "LeftLeg",
 }
 
-local ANIMATIONS = {
+local CORE_ANIMATIONS_IDS = {
 	Broke = {
 		Fall = 130483794867730,
 		Idle = 71884332622779,
@@ -192,6 +194,15 @@ function BotsManager:spawnBot(spawnPart: BasePart)
 
 	for _, animationInstance in animationsFolder:GetChildren() do
 		self.Tracks[animationInstance.Name] = animator:LoadAnimation(animationInstance)
+	end
+
+	for attackName, animationInstance in animationsCache[self.Name] do
+		local track = animator:LoadAnimation(animationInstance)
+		self.Tracks[attackName] = track
+
+		track:GetMarkerReachedSignal("Hit"):Connect(function()
+			botsAttacks[self.Name].attack(self, attackName)
+		end)
 	end
 
 	for _, track in self.Tracks do
@@ -534,7 +545,7 @@ function BotsManager:updateAttack()
 	local randomAttack = attacks[randomNumber]
 
 	self.AttackCooldown = randomAttack.Cooldown
-	botsAttacks[self.Name].attack(self, randomAttack.Name)
+	self.Tracks[randomAttack.Name]:Play()
 end
 
 function BotsManager:updateReturn()
@@ -569,8 +580,8 @@ function BotsManager:activate()
 	end)
 end
 
-function BotsManager.initialize()
-	for animationType, animationsTable in ANIMATIONS do
+local function createCoreAnimations()
+	for animationType, animationsTable in CORE_ANIMATIONS_IDS do
 		for animationName, animationId in animationsTable do
 			local animationInstance = Instance.new("Animation")
 			animationInstance.Name = `{animationType}_{animationName}`
@@ -578,16 +589,44 @@ function BotsManager.initialize()
 			animationInstance.Parent = animationsFolder
 		end
 	end
+end
 
+local function createAttackAnimations()
+	for botName, botTable in botsData do
+		animationsCache[botName] = {}
+		for attackType, attacksTable in botTable.Attacks do
+			for _, attackTable in attacksTable do
+				local animationInstance = Instance.new("Animation")
+				animationInstance.Name = attackTable.Name
+				animationInstance.AnimationId = `rbxassetid://{attackTable.AnimationId}`
+				animationInstance.Parent = animationsFolder
+
+				animationsCache[botName][attackTable.Name] = animationInstance
+			end
+		end
+	end
+end
+
+local function requireAttackModules()
 	for _, attackModule in attacksFolder:GetChildren() do
 		botsAttacks[attackModule.Name] = require(attackModule)
 	end
+end
 
+local function setupBots()
 	for _, spawnPart in spawnsFolder:GetChildren() do
 		local botName = spawnPart:GetAttribute("Bot")
 		local bot = BotsManager.createBot(botName)
 		bot:spawnBot(spawnPart)
 	end
+end
+
+function BotsManager.initialize()
+	createCoreAnimations()
+	createAttackAnimations()
+	requireAttackModules()
+
+	setupBots()
 end
 
 --// Return
