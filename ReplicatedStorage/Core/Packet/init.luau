@@ -271,7 +271,12 @@ if RunService:IsServer() then
 		playerBytes[player] = bytes
 		Import({Buffer = receivedBuffer, BufferLength = buffer.len(receivedBuffer), BufferOffset = 0, Instances = instances or {}, InstancesOffset = 0})
 		while Ended() == false do
-			local packet = packets[ReadU8()]
+			local packetId = ReadU8()
+			local packet = packets[packetId]
+			if packet == nil then
+				warn("Received unknown packet id:", packetId, "- discarding rest of buffer")
+				return
+			end
 			if packet.ResponseReads then
 				local threadIndex = ReadU8()
 				if threadIndex < 128 then
@@ -343,7 +348,12 @@ else
 	remoteEvent.OnClientEvent:Connect(function(receivedBuffer: buffer, instances: {Instance}?)
 		Import({Buffer = receivedBuffer, BufferLength = buffer.len(receivedBuffer), BufferOffset = 0, Instances = instances or {}, InstancesOffset = 0})
 		while Ended() == false do
-			local packet = packets[ReadU8()]
+			local packetId = ReadU8()
+			local packet = packets[packetId]
+			if packet == nil then
+				warn("Received unknown packet id:", packetId, "- discarding rest of buffer")
+				return
+			end
 			if packet.ResponseReads then
 				local threadIndex = ReadU8()
 				if threadIndex < 128 then

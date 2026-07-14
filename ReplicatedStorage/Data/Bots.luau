@@ -1,6 +1,6 @@
 local Bots = {
 	Bot = {
-		Health = 1000,
+		Health = 100, -- 1000
 		Toughness = 100, -- Damage resistance
 		Stability = 100, -- Stun resistance
 		Speed = 10,

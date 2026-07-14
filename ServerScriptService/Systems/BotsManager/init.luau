@@ -42,14 +42,17 @@ local animationsFolder = script.Animations
 local attacksFolder = script.Attacks
 
 --// Tables
-local botsTables = {}
+local spawnedBots = {}
+local despawnedBots = {}
 
-local botsAttacks = {}
+local attacksModules = {}
 
 local animationsCache = {}
 
 --// Constants
 local THINK_RATE = 1 / 10
+
+local RESPAWN_TIME = 30
 
 local BROKE_DURATION = 5
 local STUNNED_DURATION = 10
@@ -58,6 +61,8 @@ local CLOSE_DISTANCE = 10
 
 local TURN_SMOOTHNESS = 0.6
 local TURN_TOLERANCE = 0.99
+
+local FAR_AWAY_CFRAME = CFrame.new(0, -1000, 0)
 
 local ATTACK_CHANCES = {
 	Light = 60,
@@ -108,15 +113,90 @@ export type Bot = typeof(setmetatable({} :: types.Bot, BotsManager))
 
 --// Functions
 function BotsManager.getBot(botModel: Model)
-	return botsTables[botModel]
+	return spawnedBots[botModel]
+end
+
+local function setupModel(bot: Bot)
+	local botName = bot.Name
+
+	local botModel = botsAssets:WaitForChild(botName):Clone()
+	local humanoid = botModel:WaitForChild("Humanoid")
+	local animator = humanoid:WaitForChild("Animator") or Instance.new("Animator", humanoid)
+	local rootPart = botModel:WaitForChild("HumanoidRootPart")
+
+	bot.Model = botModel
+	bot.Humanoid = humanoid
+	bot.Animator = animator
+	bot.RootPart = rootPart
+
+	humanoid.WalkSpeed = bot.Speed
+end
+
+local function setupTracks(bot: Bot)
+	local botName = bot.Name
+	local animator = bot.Animator
+
+	for _, animationInstance in animationsFolder:GetChildren() do
+		bot.Tracks[animationInstance.Name] = animator:LoadAnimation(animationInstance)
+	end
+
+	for attackName, animationInstance in animationsCache[botName] do
+		local track = animator:LoadAnimation(animationInstance)
+		bot.Tracks[attackName] = track
+
+		track:GetMarkerReachedSignal("Hit"):Connect(function()
+			attacksModules[botName].attack(bot, attackName)
+		end)
+	end
+
+	for _, track in bot.Tracks do
+		track:Play()
+		track:Stop()
+	end
+end
+
+local function setupStateAnimations(bot: Bot, state: string)
+	local tracks = bot.Tracks
+
+	local fallTrack = tracks[`{state}_Fall`]
+	local idleTrack = tracks[`{state}_Idle`]
+	local wakeTrack = tracks[`{state}_Wake`]
+
+	fallTrack:GetMarkerReachedSignal("Next"):Connect(function()
+		if bot.State ~= state then
+			return
+		end
+
+		idleTrack:Play(0.2)
+		fallTrack:Stop(0.2)
+
+		repeat
+			task.wait(0.05)
+		until bot.State == "Waiting" or not bot.Active
+
+		wakeTrack:Play(0.2)
+		idleTrack:Stop(0.2)
+	end)
+
+	wakeTrack:GetMarkerReachedSignal("Next"):Connect(function()
+		if bot.State ~= state then
+			return
+		end
+
+		wakeTrack:Stop()
+		task.wait(0.15)
+		bot.State = "Searching"
+	end)
 end
 
 function BotsManager.createBot(botName: string)
-	local botData = table.clone(botsData[botName])
+	local rawData = botsData[botName]
 
-	if not botData then
+	if not rawData then
 		return
 	end
+
+	local botData = table.clone(rawData)
 
 	local bot = {
 		Name = botName,
@@ -124,10 +204,11 @@ function BotsManager.createBot(botName: string)
 		Active = false,
 		AttackCooldown = 0,
 		Model = nil,
+		Humanoid = nil,
+		Animator = nil,
+		RootPart = nil,
 		Tracks = {},
 		Connections = {},
-		Humanoid = nil,
-		RootPart = nil,
 		Target = nil,
 		SpawnPart = nil,
 		SpawnPosition = nil,
@@ -177,49 +258,30 @@ function BotsManager.createBot(botName: string)
 
 	setmetatable(bot, BotsManager)
 
+	setupModel(bot)
+	setupTracks(bot)
+	setupStateAnimations(bot, "Broke")
+	setupStateAnimations(bot, "Stunned")
+
 	return bot
 end
 
 function BotsManager:spawnBot(spawnPart: BasePart)
-	local botModel = botsAssets:WaitForChild(self.Name):Clone()
-	local humanoid = botModel:WaitForChild("Humanoid")
-	local animator = humanoid:WaitForChild("Animator") or Instance.new("Animator", humanoid)
+	spawnPart:SetAttribute("Active", true)
 
-	humanoid.WalkSpeed = self.Speed
+	self.SpawnPart = spawnPart
+	self.SpawnPosition = spawnPart.Position
+	self.ChaseRadius = spawnPart:GetAttribute("Radius")
+
+	local botModel = self.Model
 
 	local _, botSize = botModel:GetBoundingBox()
 	local groundHeight = spawnPart.Position.Y + spawnPart.Size.Y / 2
 	local Position = Vector3.new(spawnPart.Position.X, groundHeight + botSize.Y / 2, spawnPart.Position.Z)
 	botModel:PivotTo(CFrame.new(Position))
-
-	for _, animationInstance in animationsFolder:GetChildren() do
-		self.Tracks[animationInstance.Name] = animator:LoadAnimation(animationInstance)
-	end
-
-	for attackName, animationInstance in animationsCache[self.Name] do
-		local track = animator:LoadAnimation(animationInstance)
-		self.Tracks[attackName] = track
-
-		track:GetMarkerReachedSignal("Hit"):Connect(function()
-			botsAttacks[self.Name].attack(self, attackName)
-		end)
-	end
-
-	for _, track in self.Tracks do
-		track:Play()
-		track:Stop()
-	end
-
-	self.Model = botModel
-	self.Humanoid = botModel:WaitForChild("Humanoid")
-	self.RootPart = botModel:WaitForChild("HumanoidRootPart")
-	self.SpawnPart = spawnPart
-	self.SpawnPosition = spawnPart.Position
-	self.ChaseRadius = spawnPart:GetAttribute("Radius")
-
-	botsTables[botModel] = self
-
 	botModel.Parent = botsFolder
+
+	spawnedBots[botModel] = self
 
 	self:activate()
 end
@@ -228,7 +290,11 @@ function BotsManager:despawnBot()
 	self.Active = false
 
 	local botModel = self.Model
-	botsTables[botModel] = nil
+
+	task.defer(function()
+		botModel:PivotTo(FAR_AWAY_CFRAME) -- botModel.Parent = nil
+		spawnedBots[botModel] = nil
+	end)
 
 	self.State = "Idle"
 	self.ActualHealth = self.TotalHealth
@@ -238,46 +304,24 @@ function BotsManager:despawnBot()
 		values.ActualHealth = values.TotalHealth
 	end
 
-	for _, connection in self.Connections do
-		connection:Disconnect()
-	end
-
-	table.clear(self.Tracks)
-	table.clear(self.Connections)
 	table.clear(self.BrokenParts)
 
-	botModel:Destroy()
+	self:checkPlayersInBattle()
+
+	despawnedBots[self.Name] = self
+
+	task.delay(RESPAWN_TIME, function()
+		self.SpawnPart:SetAttribute("Active", false)
+	end)
 end
 
 function BotsManager:animateState()
 	local state = self.State
 	local tracks = self.Tracks
 
-	local fallTrack = tracks[`{state}_Fall`]
-	local idleTrack = tracks[`{state}_Idle`]
-	local wakeTrack = tracks[`{state}_Wake`]
+	local initialTrack = tracks[`{state}_Fall`]
 
-	self.Connections["Fall"] = fallTrack:GetMarkerReachedSignal("Next"):Connect(function()
-		idleTrack:Play(0.2)
-		fallTrack:Stop(0.2)
-
-		repeat
-			task.wait(0.05)
-		until self.State == "Waiting"
-
-		wakeTrack:Play(0.2)
-		idleTrack:Stop(0.2)
-	end)
-
-	self.Connections["Wake"] = wakeTrack:GetMarkerReachedSignal("Next"):Connect(function()
-		wakeTrack:Stop()
-
-		task.wait(0.15)
-
-		self.State = "Searching"
-	end)
-
-	fallTrack:Play()
+	initialTrack:Play()
 end
 
 function BotsManager:takeDamage(player: Player, attackData: { CoreDamage: number, BreakMultiplier: number, StunMultiplier: number, WoundMultiplier: number }, critical: boolean, partName: string)
@@ -316,10 +360,10 @@ function BotsManager:takeDamage(player: Player, attackData: { CoreDamage: number
 	self.StunDamage += stunDamage
 	--print(`{self.Name} stun damage is now: {self.StunDamage}.`)
 
-	if self.State ~= "Stunned" and self.State ~= "Waiting" and self.StunDamage >= self.DamageToStun then
+	if self.State ~= "Stunned" and self.State ~= "Broke" and self.State ~= "Waiting" and self.StunDamage >= self.DamageToStun then
 		self:stunBot()
 		print(`{self.Name} stunned!`)
-	end
+	end -- Impede que fique Stunned enquanto Broke.
 
 	task.defer(function()
 		replicationManager.replicate(player, 50, "Weapons", {
@@ -354,7 +398,9 @@ function BotsManager:breakPart(bodyPartName: string)
 	self:animateState()
 
 	task.delay(BROKE_DURATION, function()
-		self.State = "Waiting"
+		if self.State == "Broke" then
+			self.State = "Waiting"
+		end
 	end)
 
 	self.BrokenParts[bodyPartName] = true
@@ -365,8 +411,10 @@ function BotsManager:stunBot()
 	self:animateState()
 
 	task.delay(STUNNED_DURATION, function()
-		self.StunDamage = 0
-		self.State = "Waiting"
+		if self.State == "Stunned" then
+			self.StunDamage = 0
+			self.State = "Waiting"
+		end
 	end)
 end
 
@@ -421,6 +469,26 @@ function BotsManager:checkPlayersInBattle()
 	local charactersInBattle = self.CharactersInBattle
 	local closeCharacters = {}
 
+	if self.Active == false then
+		for character, _ in charactersInBattle do
+			local player = Players:GetPlayerFromCharacter(character)
+
+			if not player then
+				continue
+			end
+
+			leftBattleEvent:FireClient(player, {
+				Name = self.Name,
+				ActualHealth = self.ActualHealth,
+				TotalHealth = self.TotalHealth,
+			})
+		end
+
+		table.clear(self.CharactersInBattle)
+
+		return
+	end
+
 	for _, character in charactersFolder:GetChildren() do
 		local distance = (character.PrimaryPart.Position - self.SpawnPosition).Magnitude
 		if distance < distanceLimit then
@@ -433,7 +501,7 @@ function BotsManager:checkPlayersInBattle()
 			local player = Players:GetPlayerFromCharacter(character)
 
 			if not player then
-				return
+				continue
 			end
 
 			enteredBattleEvent:FireClient(player, {
@@ -449,7 +517,7 @@ function BotsManager:checkPlayersInBattle()
 			local player = Players:GetPlayerFromCharacter(character)
 
 			if not player then
-				return
+				continue
 			end
 
 			leftBattleEvent:FireClient(player, {
@@ -610,16 +678,32 @@ end
 
 local function requireAttackModules()
 	for _, attackModule in attacksFolder:GetChildren() do
-		botsAttacks[attackModule.Name] = require(attackModule)
+		attacksModules[attackModule.Name] = require(attackModule)
 	end
 end
 
 local function setupBots()
-	for _, spawnPart in spawnsFolder:GetChildren() do
-		local botName = spawnPart:GetAttribute("Bot")
-		local bot = BotsManager.createBot(botName)
-		bot:spawnBot(spawnPart)
-	end
+	task.defer(function()
+		while task.wait(1) do
+			for _, spawnPart in spawnsFolder:GetChildren() do
+				if spawnPart:GetAttribute("Active") then
+					continue
+				end
+
+				local botName = spawnPart:GetAttribute("Bot")
+
+				if not despawnedBots[botName] then
+					local bot = BotsManager.createBot(botName)
+					despawnedBots[botName] = bot
+				end
+
+				despawnedBots[botName]:spawnBot(spawnPart)
+				despawnedBots[botName] = nil
+
+				task.wait(0.05)
+			end
+		end
+	end)
 end
 
 function BotsManager.initialize()
