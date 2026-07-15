@@ -125,6 +125,14 @@
                     "color": "#84D6F7"
                 }
             ]
+        },
+        "\\bcontinue\\b": {
+            "filterLanguageRegex": "luau",
+            "decorations": [
+                {
+                    "color": "#84D6F7"
+                }
+            ]
         }
     },
     "luau-lsp.studioPlugin.maximumRequestBodySize": "20mb"

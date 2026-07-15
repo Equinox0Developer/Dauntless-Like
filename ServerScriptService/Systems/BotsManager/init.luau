@@ -54,6 +54,8 @@ local THINK_RATE = 1 / 10
 
 local RESPAWN_TIME = 30
 
+local STUN_INCREASE = 1.2
+
 local BROKE_DURATION = 5
 local STUNNED_DURATION = 10
 
@@ -407,6 +409,7 @@ function BotsManager:breakPart(bodyPartName: string)
 end
 
 function BotsManager:stunBot()
+	self.DamageToStun *= STUN_INCREASE
 	self.State = "Stunned"
 	self:animateState()
 
