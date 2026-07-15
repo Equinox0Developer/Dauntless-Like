@@ -31,7 +31,7 @@ local leftBattleEvent = packet("LeftBattle", packet.Any)
 local player = Players.LocalPlayer
 
 local playerGui = player.PlayerGui
-local menu = menusAssets:WaitForChild("Battle"):Clone()
+local menu = menusAssets:WaitForChild("Battle")
 
 local background = menu.Background
 

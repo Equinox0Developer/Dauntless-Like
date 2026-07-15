@@ -22,7 +22,7 @@ local spring = require(effects:WaitForChild("Spring"))
 local player = Players.LocalPlayer
 
 local playerGui = player.PlayerGui
-local menu = menusAssets:WaitForChild("Player"):Clone()
+local menu = menusAssets:WaitForChild("Player")
 
 local background = menu.Background
 
