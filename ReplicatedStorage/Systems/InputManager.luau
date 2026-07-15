@@ -33,17 +33,17 @@ local function isInputValid(pressed: boolean)
 	return pressed and rootPart ~= nil
 end
 
-local function move(vector: Vector2)
-	if vector.Magnitude > 0 then
-		lastMoveVector = vector.Unit
-	end
-end
-
 local function getMovingDirection()
 	if math.abs(lastMoveVector.Y) > math.abs(lastMoveVector.X) then
 		return lastMoveVector.Y > 0 and "Forward" or "Backward"
 	else
 		return lastMoveVector.X > 0 and "Right" or "Left"
+	end
+end
+
+local function move(vector: Vector2)
+	if vector.Magnitude > 0 then
+		lastMoveVector = vector.Unit
 	end
 end
 
