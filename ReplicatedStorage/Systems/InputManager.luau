@@ -10,6 +10,7 @@ local systems = ReplicatedStorage:WaitForChild("Systems")
 local inputs = ReplicatedStorage:WaitForChild("Inputs")
 
 --// Systems
+--local simulationsManager = require(systems:WaitForChild("SimulationsManager"))
 local combatManager = require(systems:WaitForChild("CombatManagerClient"))
 
 --// Contexts
@@ -60,7 +61,9 @@ local function dash(pressed: boolean)
 		return
 	end
 
-	print(getMovingDirection())
+	local movingDirection = getMovingDirection()
+	print(movingDirection)
+	-- simulationsManager.dash(movingDirection)
 end
 
 function InputManager.characterAdded(model: Model)
@@ -83,4 +86,5 @@ function InputManager.initialize()
 	dashAction.StateChanged:Connect(dash)
 end
 
+--// Return
 return InputManager
